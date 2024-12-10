@@ -53,4 +53,8 @@ public class Product {
         this.productPrice = productPrice;
         this.quantity = quantity;
     }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 }

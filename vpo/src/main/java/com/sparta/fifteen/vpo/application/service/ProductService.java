@@ -69,4 +69,16 @@ public class ProductService {
 
         return ProductResponse.of(product);
     }
+
+    @Transactional
+    public ProductResponse deleteProduct(UUID productId) {
+
+        Product product = productRepository.findById(productId).orElseThrow();
+
+        product.delete();
+
+        return ProductResponse.of(product);
+
+
+    }
 }
