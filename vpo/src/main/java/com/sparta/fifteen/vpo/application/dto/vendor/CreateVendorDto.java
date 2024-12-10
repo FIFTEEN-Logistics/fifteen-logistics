@@ -22,6 +22,7 @@ public class CreateVendorDto {
 
     public static CreateVendorDto create(
             Long userId, UUID hubId, String vendorName, VendorType vendorType, String vendorAddress) {
+
         return CreateVendorDto.builder()
                 .userId(userId)
                 .hubId(hubId)
