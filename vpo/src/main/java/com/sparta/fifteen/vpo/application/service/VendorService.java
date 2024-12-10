@@ -48,9 +48,9 @@ public class VendorService {
     }
 
     @Transactional
-    public VendorResponse updateVendor(UpdateVendorDto request) {
+    public VendorResponse updateVendor(UUID vendorId,UpdateVendorDto request) {
 
-        Vendor vendor = vendorRepository.findById(request.getVendorId()).orElseThrow();
+        Vendor vendor = vendorRepository.findById(vendorId).orElseThrow();
 
         vendor.update(
                 request.getHubId(),

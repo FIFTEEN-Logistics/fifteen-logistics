@@ -41,8 +41,7 @@ public class VendorController {
             @PathVariable UUID vendorId,
             @RequestBody UpdateVendorRequest request) {
 
-        request.setVendorId(vendorId);
-        return ResponseEntity.ok(vendorService.updateVendor(request.toDto()));
+        return ResponseEntity.ok(vendorService.updateVendor(vendorId, request.toDto()));
     }
 
     @DeleteMapping("/{vendorId}")
