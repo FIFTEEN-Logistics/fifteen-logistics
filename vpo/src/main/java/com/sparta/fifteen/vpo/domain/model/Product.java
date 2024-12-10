@@ -47,4 +47,10 @@ public class Product {
                 .build();
     }
 
+    public void update(UUID hubId, String productName, Integer productPrice, Integer quantity) {
+        this.hubId = hubId;
+        this.productName = productName;
+        this.productPrice = productPrice;
+        this.quantity = quantity;
+    }
 }

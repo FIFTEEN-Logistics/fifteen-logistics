@@ -3,8 +3,8 @@ package com.sparta.fifteen.vpo.presentation.controller;
 
 import com.sparta.fifteen.vpo.application.dto.product.ProductResponse;
 import com.sparta.fifteen.vpo.application.service.ProductService;
+import com.sparta.fifteen.vpo.presentation.request.product.UpdateProductRequest;
 import com.sparta.fifteen.vpo.presentation.request.product.CreateProductRequest;
-import feign.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,5 +35,13 @@ public class ProductController {
     @GetMapping("/{productId}")
     public ResponseEntity<?> getProduct(@PathVariable UUID productId) {
         return ResponseEntity.ok(productService.getProduct(productId));
+    }
+
+    @PutMapping("/{productId}")
+    public ResponseEntity<?> updateProduct(
+            @PathVariable UUID productId,
+            @RequestBody UpdateProductRequest request) {
+
+        return ResponseEntity.ok(productService.updateProduct(productId, request.toDto()));
     }
 }

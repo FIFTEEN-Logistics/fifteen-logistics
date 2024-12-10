@@ -24,6 +24,12 @@ public class UpdateVendorRequest {
     private String vendorAddress;
 
     public UpdateVendorDto toDto() {
-        return UpdateVendorDto.create(this.vendorId, this.userId, this.hubId, this.vendorName, this.vendorType, this.vendorAddress);
+        return UpdateVendorDto.create(
+                this.vendorId,
+                this.userId,
+                this.hubId,
+                this.vendorName,
+                this.vendorType,
+                this.vendorAddress);
     }
 }
