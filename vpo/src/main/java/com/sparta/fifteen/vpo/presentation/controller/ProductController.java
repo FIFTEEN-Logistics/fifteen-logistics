@@ -1,14 +1,18 @@
 package com.sparta.fifteen.vpo.presentation.controller;
 
 
+import com.sparta.fifteen.vpo.application.dto.product.ProductResponse;
 import com.sparta.fifteen.vpo.application.service.ProductService;
 import com.sparta.fifteen.vpo.presentation.request.product.CreateProductRequest;
+import feign.Response;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,5 +24,16 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<?> createProduct(@RequestBody CreateProductRequest request) {
         return ResponseEntity.ok(productService.createProduct(request.toDto()));
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<ProductResponse>> getProducts(@PageableDefault(
+            sort = "productPrice") Pageable pageable) {
+        return ResponseEntity.ok(productService.getProducts(pageable));
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<?> getProduct(@PathVariable UUID productId) {
+        return ResponseEntity.ok(productService.getProduct(productId));
     }
 }
