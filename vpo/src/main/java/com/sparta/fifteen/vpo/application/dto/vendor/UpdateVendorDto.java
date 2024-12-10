@@ -11,8 +11,6 @@ import java.util.UUID;
 @Builder(access = AccessLevel.PRIVATE)
 public class UpdateVendorDto {
 
-    private UUID vendorId;
-
     private Long userId;
 
     private UUID hubId;
@@ -24,9 +22,8 @@ public class UpdateVendorDto {
     private String vendorAddress;
 
     public static UpdateVendorDto create(
-            UUID vendorId, Long userId, UUID hubId, String vendorName, VendorType vendorType, String vendorAddress) {
+            Long userId, UUID hubId, String vendorName, VendorType vendorType, String vendorAddress) {
         return UpdateVendorDto.builder()
-                .vendorId(vendorId)
                 .userId(userId)
                 .hubId(hubId)
                 .vendorName(vendorName)
