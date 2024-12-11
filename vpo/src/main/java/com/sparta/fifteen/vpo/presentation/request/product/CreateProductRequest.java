@@ -14,9 +14,9 @@ public class CreateProductRequest {
 
     private String productName;
 
-    private Integer productPrice;
+    private int productPrice;
 
-    private Integer quantity;
+    private int quantity;
 
     public CreateProductDto toDto() {
         return CreateProductDto.create(this.vendorId, this.hubId, this.productName, this.productPrice, this.quantity);
