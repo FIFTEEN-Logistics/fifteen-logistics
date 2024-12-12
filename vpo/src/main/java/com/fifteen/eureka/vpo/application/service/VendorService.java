@@ -1,10 +1,14 @@
 package com.fifteen.eureka.vpo.application.service;
 
+import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
+import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.vpo.application.dto.vendor.CreateVendorDto;
 import com.fifteen.eureka.vpo.application.dto.vendor.UpdateVendorDto;
 import com.fifteen.eureka.vpo.application.dto.vendor.VendorResponse;
 import com.fifteen.eureka.vpo.domain.model.Vendor;
 import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
+import com.fifteen.eureka.vpo.infrastructure.client.HubClient;
+import com.fifteen.eureka.vpo.infrastructure.client.UserClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -20,8 +24,18 @@ import java.util.UUID;
 public class VendorService {
 
     private final VendorRepository vendorRepository;
+    private final HubClient hubClient;
+    private final UserClient userClient;
+
 
     public VendorResponse createVendor(CreateVendorDto request) {
+
+        if(!hubClient.getHub(request.getHubId()).getHttpStatusCode().equals(20000)) {
+            throw new CustomApiException(ResErrorCode.NOT_FOUND);
+        }
+        if(!userClient.getUser(request.getUserId()).getHttpStatusCode().equals(20000)) {
+            throw new CustomApiException(ResErrorCode.NOT_FOUND);
+        }
 
         Vendor vendor = Vendor.create(
                 request.getHubId(),
