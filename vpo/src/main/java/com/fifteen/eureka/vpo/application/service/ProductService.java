@@ -1,5 +1,7 @@
 package com.fifteen.eureka.vpo.application.service;
 
+import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
+import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.vpo.application.dto.product.CreateProductDto;
 import com.fifteen.eureka.vpo.application.dto.product.ProductResponse;
 import com.fifteen.eureka.vpo.application.dto.product.UpdateProductDto;
@@ -26,10 +28,11 @@ public class ProductService {
 
     public ProductResponse createProduct(CreateProductDto request) {
 
-        Vendor vendor = vendorRepository.findById(request.getVendorId()).orElseThrow();
+        Vendor vendor = vendorRepository.findById(request.getVendorId())
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
         Product product = Product.create(
-                request.getHubId(),
+                vendor.getHubId(),
                 request.getProductName(),
                 request.getProductPrice(),
                 request.getQuantity(),
@@ -51,17 +54,18 @@ public class ProductService {
     }
 
     public ProductResponse getProduct(UUID productId) {
-        Product product = productRepository.findById(productId).orElseThrow();
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
         return ProductResponse.of(product);
     }
 
     @Transactional
     public ProductResponse updateProduct(UUID productId, UpdateProductDto request) {
 
-        Product product = productRepository.findById(productId).orElseThrow();
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
         product.update(
-          request.getHubId(),
           request.getProductName(),
           request.getProductPrice(),
           request.getQuantity()
@@ -73,12 +77,12 @@ public class ProductService {
     @Transactional
     public ProductResponse deleteProduct(UUID productId) {
 
-        Product product = productRepository.findById(productId).orElseThrow();
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
         product.delete();
 
         return ProductResponse.of(product);
-
 
     }
 }

@@ -45,8 +45,7 @@ public class Product extends BaseEntity {
                 .build();
     }
 
-    public void update(UUID hubId, String productName, int productPrice, int quantity) {
-        this.hubId = hubId;
+    public void update(String productName, int productPrice, int quantity) {
         this.productName = productName;
         this.productPrice = productPrice;
         this.quantity = quantity;

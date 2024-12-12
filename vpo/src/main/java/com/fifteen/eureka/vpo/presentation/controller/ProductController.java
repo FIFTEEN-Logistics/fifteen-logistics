@@ -1,15 +1,17 @@
 package com.fifteen.eureka.vpo.presentation.controller;
 
 
+import com.fifteen.eureka.common.response.ApiResponse;
+import com.fifteen.eureka.common.response.ResSuccessCode;
 import com.fifteen.eureka.vpo.application.dto.product.ProductResponse;
 import com.fifteen.eureka.vpo.application.service.ProductService;
-import com.fifteen.eureka.vpo.presentation.request.product.UpdateProductRequest;
 import com.fifteen.eureka.vpo.presentation.request.product.CreateProductRequest;
+import com.fifteen.eureka.vpo.presentation.request.product.UpdateProductRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -22,30 +24,30 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<?> createProduct(@RequestBody CreateProductRequest request) {
-        return ResponseEntity.ok(productService.createProduct(request.toDto()));
+    public ApiResponse<?> createProduct(@Valid @RequestBody CreateProductRequest request) {
+        return ApiResponse.OK(ResSuccessCode.CREATED, productService.createProduct(request.toDto()));
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProductResponse>> getProducts(@PageableDefault(sort = "productPrice") Pageable pageable) {
-        return ResponseEntity.ok(productService.getProducts(pageable));
+    public ApiResponse<Page<ProductResponse>> getProducts(@PageableDefault(sort = "productPrice") Pageable pageable) {
+        return ApiResponse.OK(ResSuccessCode.SUCCESS, productService.getProducts(pageable));
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<?> getProduct(@PathVariable UUID productId) {
-        return ResponseEntity.ok(productService.getProduct(productId));
+    public ApiResponse<?> getProduct(@PathVariable UUID productId) {
+        return ApiResponse.OK(ResSuccessCode.SUCCESS, productService.getProduct(productId));
     }
 
     @PutMapping("/{productId}")
-    public ResponseEntity<?> updateProduct(
+    public ApiResponse<?> updateProduct(
             @PathVariable UUID productId,
-            @RequestBody UpdateProductRequest request) {
+            @Valid @RequestBody UpdateProductRequest request) {
 
-        return ResponseEntity.ok(productService.updateProduct(productId, request.toDto()));
+        return ApiResponse.OK(ResSuccessCode.UPDATED, productService.updateProduct(productId, request.toDto()));
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<?> deleteProduct(@PathVariable UUID productId) {
-        return ResponseEntity.ok(productService.deleteProduct(productId));
+    public ApiResponse<?> deleteProduct(@PathVariable UUID productId) {
+        return ApiResponse.OK(ResSuccessCode.DELETED, productService.deleteProduct(productId));
     }
 }
