@@ -25,10 +25,10 @@ public class Product {
     private String productName;
 
     @Column(nullable = false)
-    private Integer productPrice;
+    private int productPrice;
 
     @Column(nullable = false)
-    private Integer quantity;
+    private int quantity;
 
     @ManyToOne
     @JoinColumn(name = "vendor_id", nullable = false)
@@ -37,7 +37,7 @@ public class Product {
     @Column(nullable = false)
     private boolean isDeleted;
 
-    public static Product create(UUID hubId, String productName, Integer productPrice, Integer quantity, Vendor vendor) {
+    public static Product create(UUID hubId, String productName, int productPrice, int quantity, Vendor vendor) {
         return Product.builder()
                 .hubId(hubId)
                 .productName(productName)
@@ -47,7 +47,7 @@ public class Product {
                 .build();
     }
 
-    public void update(UUID hubId, String productName, Integer productPrice, Integer quantity) {
+    public void update(UUID hubId, String productName, int productPrice, int quantity) {
         this.hubId = hubId;
         this.productName = productName;
         this.productPrice = productPrice;
@@ -56,5 +56,9 @@ public class Product {
 
     public void delete() {
         this.isDeleted = true;
+    }
+
+    public void updateQuantity(int quantity) {
+        this.quantity = quantity;
     }
 }

@@ -14,12 +14,12 @@ public class UpdateProductDto {
 
     private String productName;
 
-    private Integer productPrice;
+    private int productPrice;
 
-    private Integer quantity;
+    private int quantity;
 
     public static UpdateProductDto create(
-            UUID hubId, String productName, Integer productPrice, Integer quantity) {
+            UUID hubId, String productName, int productPrice, int quantity) {
         return UpdateProductDto.builder()
                 .hubId(hubId)
                 .productName(productName)

@@ -14,9 +14,9 @@ public class UpdateProductRequest {
 
     private String productName;
 
-    private Integer productPrice;
+    private int productPrice;
 
-    private Integer quantity;
+    private int quantity;
 
     public UpdateProductDto toDto() {
         return UpdateProductDto.create(

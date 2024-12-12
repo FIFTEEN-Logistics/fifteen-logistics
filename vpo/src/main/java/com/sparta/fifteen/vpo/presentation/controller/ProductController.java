@@ -27,8 +27,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProductResponse>> getProducts(@PageableDefault(
-            sort = "productPrice") Pageable pageable) {
+    public ResponseEntity<Page<ProductResponse>> getProducts(@PageableDefault(sort = "productPrice") Pageable pageable) {
         return ResponseEntity.ok(productService.getProducts(pageable));
     }
 

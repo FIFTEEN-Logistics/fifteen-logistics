@@ -15,12 +15,12 @@ public class CreateProductDto {
 
     private String productName;
 
-    private Integer productPrice;
+    private int productPrice;
 
-    private Integer quantity;
+    private int quantity;
 
     public static CreateProductDto create(
-            UUID vendorId,UUID hubId,String productName,Integer productPrice,Integer quantity) {
+            UUID vendorId,UUID hubId,String productName,int productPrice,int quantity) {
 
         return CreateProductDto.builder()
                 .vendorId(vendorId)

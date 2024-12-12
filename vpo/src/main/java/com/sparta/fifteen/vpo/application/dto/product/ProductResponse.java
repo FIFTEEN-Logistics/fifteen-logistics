@@ -15,8 +15,8 @@ public class ProductResponse {
     private UUID vendorId;
     private UUID hubId;
     private String productName;
-    private Integer productPrice;
-    private Integer quantity;
+    private int productPrice;
+    private int quantity;
     private boolean isDeleted;
 
     public static ProductResponse of(Product product) {
