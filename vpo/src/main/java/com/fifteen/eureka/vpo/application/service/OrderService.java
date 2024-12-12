@@ -87,13 +87,13 @@ public class OrderService {
         Order order = orderRepository.findById(orderId).orElseThrow();
         return OrderResponse.of(order);
     }
-//
-//    @Transactional
-//    public OrderResponse cancelOrder(UUID orderId) {
-//        Order order = orderRepository.findById(orderId).orElseThrow();
-//        order.cancel();
-//        return OrderResponse.of(order);
-//    }
+
+    @Transactional
+    public OrderResponse cancelOrder(UUID orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow();
+        order.cancel();
+        return OrderResponse.of(order);
+    }
 
 
     //주문수정

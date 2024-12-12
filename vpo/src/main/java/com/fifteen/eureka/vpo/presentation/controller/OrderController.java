@@ -3,6 +3,7 @@ package com.fifteen.eureka.vpo.presentation.controller;
 import com.fifteen.eureka.vpo.application.dto.order.OrderResponse;
 import com.fifteen.eureka.vpo.application.service.OrderService;
 import com.fifteen.eureka.vpo.presentation.request.order.CreateOrderRequest;
+import com.fifteen.eureka.vpo.presentation.request.order.UpdateOrderRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,8 +52,8 @@ public class OrderController {
 //        ));
 //    }
 
-//    @PutMapping("/{orderId}/cancel")
-//    public ResponseEntity<?> cancelOrder(@PathVariable UUID orderId) {
-//        return ResponseEntity.ok(orderService.cancelOrder(orderId));
-//    }
+    @PatchMapping("/{orderId}/cancel")
+    public ResponseEntity<?> cancelOrder(@PathVariable UUID orderId) {
+        return ResponseEntity.ok(orderService.cancelOrder(orderId));
+    }
 }
