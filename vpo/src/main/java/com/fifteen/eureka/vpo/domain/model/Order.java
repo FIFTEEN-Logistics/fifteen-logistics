@@ -3,7 +3,9 @@ package com.fifteen.eureka.vpo.domain.model;
 import com.fifteen.eureka.common.auditor.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +17,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@SQLDelete(sql = "UPDATE p_order SET is_deleted = true WHERE order_id = ?")
+//@Where(clause = "is_deleted = false")
 public class Order extends BaseEntity {
 
     @Id
@@ -73,6 +77,18 @@ public class Order extends BaseEntity {
         this.orderNumber = orderNumber;
     }
 
+//    public void updateSupplier(Vendor newSupplier) {
+//        this.supplier = newSupplier;
+//    }
+
+    public void updateReceiver(Vendor newReceiver) {
+        this.receiver = newReceiver;
+    }
+
+    public void updateOrderRequest(String newRequest) {
+        this.orderRequest = newRequest;
+    }
+
     public void calculateTotalPrice() {
         this.totalPrice = orderDetails.stream()
                 .mapToLong(OrderDetail::getProductsPrice)
@@ -82,5 +98,6 @@ public class Order extends BaseEntity {
     public void cancel() {
         this.isCanceled = true;
     }
+
 
 }

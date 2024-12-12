@@ -1,9 +1,6 @@
 package com.fifteen.eureka.vpo.application.service;
 
-import com.fifteen.eureka.vpo.application.dto.order.CreateDeliveryInfoDto;
-import com.fifteen.eureka.vpo.application.dto.order.CreateOrderDetailDto;
-import com.fifteen.eureka.vpo.application.dto.order.CreateOrderDto;
-import com.fifteen.eureka.vpo.application.dto.order.OrderResponse;
+import com.fifteen.eureka.vpo.application.dto.order.*;
 import com.fifteen.eureka.vpo.domain.model.Order;
 import com.fifteen.eureka.vpo.domain.model.OrderDetail;
 import com.fifteen.eureka.vpo.domain.model.Product;
@@ -11,6 +8,7 @@ import com.fifteen.eureka.vpo.domain.model.Vendor;
 import com.fifteen.eureka.vpo.domain.repository.OrderRepository;
 import com.fifteen.eureka.vpo.domain.repository.ProductRepository;
 import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.servlet.filter.OrderedFormContentFilter;
@@ -21,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -88,21 +88,6 @@ public class OrderService {
         return OrderResponse.of(order);
     }
 
-    @Transactional
-    public OrderResponse cancelOrder(UUID orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow();
-        order.cancel();
-        return OrderResponse.of(order);
-    }
-
-    @Transactional
-    public OrderResponse deleteOrder(UUID orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow();
-        order.delete();
-        return OrderResponse.of(order);
-    }
-
-
     //주문수정
     //- 주문 id, 배달 id를 유지하며 수정하려면
     //   ( 상품 준비중 일떄만 가능)
@@ -113,11 +98,54 @@ public class OrderService {
     // 일단 1만 구현해놓기! 인데 사실
     // 수령업체가 바뀌는거랑 배송지는 큰 상관없을거같고.. 본사분사 무 ㅓ많으니..?
 
-//    @Transactional
-//    public OrderResponse updateOrder(UUID orderId, UpdateOrderDto orderRequest, List<UpdateOrderDetailDto> orderDetailsRequest) {
-//
-//
-//    }
+    @Transactional
+    public OrderResponse updateOrder(UUID orderId, UpdateOrderDto orderRequest, List<UpdateOrderDetailDto> orderDetailsRequest) {
 
+        //order
+        Order order = orderRepository.findById(orderId).orElseThrow();
+
+
+        // 공급업체 변경 처리
+//        if (!order.getSupplier().getVendorId().equals(orderRequest.getSupplierId())) {
+//            Vendor newSupplier = vendorRepository.findById(orderRequest.getSupplierId())
+//                    .orElseThrow(() -> new EntityNotFoundException("Supplier not found"));
+//            order.updateSupplier(newSupplier);
+//        }
+
+        // 수령업체 변경 처리
+        if (!order.getReceiver().getVendorId().equals(orderRequest.getReceiverId())) {
+            Vendor newReceiver = vendorRepository.findById(orderRequest.getReceiverId())
+                    .orElseThrow(() -> new EntityNotFoundException("Receiver not found"));
+            order.updateReceiver(newReceiver);
+        }
+
+        // OrderDetail 변경 처리
+//        if (isOrderDetailsChanged(order, orderDetailsRequest)) {
+//
+//        }
+
+        // 요청사항 변경 처리
+        if (!order.getOrderRequest().equals(orderRequest.getOrderRequest())) {
+            order.updateOrderRequest(orderRequest.getOrderRequest());
+        }
+
+        order.calculateTotalPrice();
+
+        return OrderResponse.of(order);
+
+    }
+    @Transactional
+    public OrderResponse cancelOrder(UUID orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow();
+        order.cancel();
+        return OrderResponse.of(order);
+    }
+
+
+    public OrderResponse deleteOrder(UUID orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow();
+        orderRepository.delete(order);
+        return OrderResponse.of(order);
+    }
 
 }

@@ -40,17 +40,17 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrder(orderId));
     }
 
-//    @PutMapping("/{orderId}")
-//    public ResponseEntity<?> updateOrder(
-//            @PathVariable UUID orderId,
-//            @RequestBody UpdateOrderRequest request) {
-//
-//        return ResponseEntity.ok(orderService.updateOrder(
-//                orderId,
-//                request.toDto(),
-//                request.getOrderDetails().stream().map(UpdateOrderRequest.OrderDetail::toDto).toList()
-//        ));
-//    }
+    @PutMapping("/{orderId}")
+    public ResponseEntity<?> updateOrder(
+            @PathVariable UUID orderId,
+            @RequestBody UpdateOrderRequest request) {
+
+        return ResponseEntity.ok(orderService.updateOrder(
+                orderId,
+                request.toDto(),
+                request.getOrderDetails().stream().map(UpdateOrderRequest.OrderDetail::toDto).toList()
+        ));
+    }
 
     @PatchMapping("/{orderId}/cancel")
     public ResponseEntity<?> cancelOrder(@PathVariable UUID orderId) {
