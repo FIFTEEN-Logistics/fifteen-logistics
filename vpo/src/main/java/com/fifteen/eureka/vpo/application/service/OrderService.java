@@ -95,6 +95,7 @@ public class OrderService {
         return OrderResponse.of(order);
     }
 
+    @Transactional
     public OrderResponse deleteOrder(UUID orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow();
         order.delete();

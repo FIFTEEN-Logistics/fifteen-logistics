@@ -1,5 +1,6 @@
 package com.fifteen.eureka.vpo.domain.model;
 
+import com.fifteen.eureka.common.auditor.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -12,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class Product {
+public class Product extends BaseEntity {
 
     @Id
     @UuidGenerator
@@ -34,9 +35,6 @@ public class Product {
     @JoinColumn(name = "vendor_id", nullable = false)
     private Vendor vendor;
 
-    @Column(nullable = false)
-    private boolean isDeleted;
-
     public static Product create(UUID hubId, String productName, int productPrice, int quantity, Vendor vendor) {
         return Product.builder()
                 .hubId(hubId)
@@ -54,9 +52,6 @@ public class Product {
         this.quantity = quantity;
     }
 
-    public void delete() {
-        this.isDeleted = true;
-    }
 
     public void updateQuantity(int quantity) {
         this.quantity = quantity;

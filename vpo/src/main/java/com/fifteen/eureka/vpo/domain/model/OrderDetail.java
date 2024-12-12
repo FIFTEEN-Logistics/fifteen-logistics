@@ -1,5 +1,6 @@
 package com.fifteen.eureka.vpo.domain.model;
 
+import com.fifteen.eureka.common.auditor.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -10,7 +11,7 @@ import org.hibernate.annotations.UuidGenerator;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class OrderDetail {
+public class OrderDetail extends BaseEntity {
 
     @UuidGenerator
     @Id
@@ -29,9 +30,6 @@ public class OrderDetail {
 
     @Column(nullable = false)
     private long productsPrice;
-
-    @Column(nullable = false)
-    private boolean isDeleted;
 
     public static OrderDetail create(Order order, Product product, int quantity) {
         long productsPrice = (long) product.getProductPrice() * quantity;

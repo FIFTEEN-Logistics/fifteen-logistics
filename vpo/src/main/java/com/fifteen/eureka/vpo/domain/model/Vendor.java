@@ -1,5 +1,6 @@
 package com.fifteen.eureka.vpo.domain.model;
 
+import com.fifteen.eureka.common.auditor.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class Vendor {
+public class Vendor extends BaseEntity {
 
     @Id
     @UuidGenerator
@@ -66,7 +67,4 @@ public class Vendor {
         this.vendorAddress = vendorAddress;
     }
 
-    public void delete() {
-        this.isDeleted = true;
-    }
 }

@@ -1,5 +1,6 @@
 package com.fifteen.eureka.vpo.domain.model;
 
+import com.fifteen.eureka.common.auditor.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class Order{
+public class Order extends BaseEntity {
 
     @Id
     @UuidGenerator
@@ -37,9 +38,6 @@ public class Order{
 
     @Column(nullable = false)
     private boolean isCanceled;
-
-    @Column(nullable = false)
-    private boolean isDeleted;
 
     @ManyToOne
     @JoinColumn(name = "supplier_id", nullable = false)
@@ -85,7 +83,4 @@ public class Order{
         this.isCanceled = true;
     }
 
-    public void delete() {
-        this.isDeleted = true;
-    }
 }
