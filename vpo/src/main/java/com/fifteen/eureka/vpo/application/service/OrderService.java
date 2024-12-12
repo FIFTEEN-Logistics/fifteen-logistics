@@ -155,18 +155,25 @@ public class OrderService {
     }
     @Transactional
     public OrderResponse cancelOrder(UUID orderId) {
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
+
         order.cancel();
+
         return OrderResponse.of(order);
     }
 
 
     public OrderResponse deleteOrder(UUID orderId) {
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
+
         orderRepository.delete(order);
+
         return OrderResponse.of(order);
+
     }
 
 }

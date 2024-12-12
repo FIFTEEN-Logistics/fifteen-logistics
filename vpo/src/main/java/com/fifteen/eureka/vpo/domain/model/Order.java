@@ -18,7 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 @SQLDelete(sql = "UPDATE p_order SET is_deleted = true WHERE order_id = ?")
-//@Where(clause = "is_deleted = false")
+@Where(clause = "is_deleted = false")
 public class Order extends BaseEntity {
 
     @Id

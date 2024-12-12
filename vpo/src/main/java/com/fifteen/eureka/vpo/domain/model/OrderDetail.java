@@ -4,6 +4,7 @@ import com.fifteen.eureka.common.auditor.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "p_order_detail")
@@ -11,6 +12,7 @@ import org.hibernate.annotations.UuidGenerator;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Where(clause = "is_deleted = false")
 public class OrderDetail extends BaseEntity {
 
     @UuidGenerator
@@ -41,7 +43,4 @@ public class OrderDetail extends BaseEntity {
                 .build();
     }
 
-    public long calculateProductsPrice() {
-        return  (long) product.getProductPrice() * quantity;
-    }
 }

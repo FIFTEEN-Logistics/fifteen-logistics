@@ -30,13 +30,13 @@ public class VendorService {
 
     public VendorResponse createVendor(CreateVendorDto request) {
 
-        if(!hubClient.getHub(request.getHubId()).getHttpStatusCode().equals(20000)) {
-            throw new CustomApiException(ResErrorCode.NOT_FOUND);
-        }
-
-        if(!userClient.getUser(request.getUserId()).getHttpStatusCode().equals(20000)) {
-            throw new CustomApiException(ResErrorCode.NOT_FOUND);
-        }
+//        if(!hubClient.getHub(request.getHubId()).getCode().equals(20000)) {
+//            throw new CustomApiException(ResErrorCode.NOT_FOUND);
+//        }
+//
+//        if(!userClient.getUser(request.getUserId()).getCode().equals(20000)) {
+//            throw new CustomApiException(ResErrorCode.NOT_FOUND);
+//        }
 
         Vendor vendor = Vendor.create(
                 request.getHubId(),
@@ -81,14 +81,14 @@ public class VendorService {
 
     }
 
-    @Transactional
     public VendorResponse deleteVendor(UUID vendorId) {
 
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
-        vendor.delete();
+        vendorRepository.delete(vendor);
 
         return VendorResponse.of(vendor);
+
     }
 }

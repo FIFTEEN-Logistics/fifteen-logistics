@@ -5,7 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+		"com.fifteen.eureka.vpo",
+		"com.fifteen.eureka.common"
+})
 @EnableFeignClients
 public class VpoApplication {
 

@@ -74,13 +74,12 @@ public class ProductService {
         return ProductResponse.of(product);
     }
 
-    @Transactional
     public ProductResponse deleteProduct(UUID productId) {
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
-        product.delete();
+        productRepository.delete(product);
 
         return ProductResponse.of(product);
 
