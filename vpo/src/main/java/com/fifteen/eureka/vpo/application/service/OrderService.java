@@ -95,6 +95,12 @@ public class OrderService {
         return OrderResponse.of(order);
     }
 
+    public OrderResponse deleteOrder(UUID orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow();
+        order.delete();
+        return OrderResponse.of(order);
+    }
+
 
     //주문수정
     //- 주문 id, 배달 id를 유지하며 수정하려면

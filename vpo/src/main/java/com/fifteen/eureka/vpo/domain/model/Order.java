@@ -84,4 +84,8 @@ public class Order{
     public void cancel() {
         this.isCanceled = true;
     }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 }

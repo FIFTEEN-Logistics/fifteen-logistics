@@ -17,6 +17,9 @@ public class OrderResponse {
     private UUID supplierId;
     private UUID receiverId;
     private String orderRequest;
+    private boolean isDeleted;
+    private boolean isCanceled;
+
     private List<OrderDetailResponse> orderDetails;
 
     //delivery는 나중에 실제 딜리버리로 바꾸김 + orderdetails동
@@ -28,6 +31,8 @@ public class OrderResponse {
                 .supplierId(order.getSupplier().getVendorId())
                 .receiverId(order.getReceiver().getVendorId())
                 .orderRequest(order.getOrderRequest())
+                .isDeleted(order.isDeleted())
+                .isCanceled(order.isCanceled())
                 .orderDetails(order.getOrderDetails().stream().map(OrderDetailResponse::of).toList())
                 .build();
     }
