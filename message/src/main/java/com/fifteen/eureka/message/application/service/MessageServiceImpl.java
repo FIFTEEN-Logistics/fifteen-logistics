@@ -53,4 +53,13 @@ public class MessageServiceImpl implements MessageService {
 
         log.info("메시지 수정 서비스 : END");
     }
+
+    @Override
+    @Transactional
+    public void deleteMessage(UUID messageId) {
+        
+        log.info("메시지 삭제 서비스 : START");
+        messageRepository.deleteById(messageId);
+        log.info("메시지 삭제 서비스 : END");
+    }
 }

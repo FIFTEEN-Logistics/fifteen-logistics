@@ -40,4 +40,12 @@ public class MessageController {
         messageService.updateMessage(MessageUpdateRequestDto.from(messageUpdateRequest),messageId);
         return ApiResponse.OK(ResSuccessCode.UPDATED);
     }
+
+    @DeleteMapping("/{messageId}")
+    public ApiResponse<?> deleteMessage(@PathVariable UUID messageId) {
+
+        log.info("메시지 삭제 URL 매핑 : OK");
+        messageService.deleteMessage(messageId);
+        return ApiResponse.OK(ResSuccessCode.DELETED);
+    }
 }

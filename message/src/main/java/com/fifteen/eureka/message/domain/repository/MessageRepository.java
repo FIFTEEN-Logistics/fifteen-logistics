@@ -12,4 +12,6 @@ public interface MessageRepository {
     Message save(Message message);
 
     Optional<Message> findById(UUID messageId);
+
+    void deleteById(UUID messageId);
 }

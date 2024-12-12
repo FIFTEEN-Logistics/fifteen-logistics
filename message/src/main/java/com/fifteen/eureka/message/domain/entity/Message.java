@@ -4,12 +4,16 @@ import com.fifteen.eureka.common.auditor.BaseEntity;
 import com.fifteen.eureka.message.infrastructure.util.MessageUtil;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "p_slack_message")
+@SQLDelete(sql = "UPDATE p_slack_message SET is_deleted = true WHERE message_id=?")
+@SQLRestriction(value = "is_deleted = false")
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
