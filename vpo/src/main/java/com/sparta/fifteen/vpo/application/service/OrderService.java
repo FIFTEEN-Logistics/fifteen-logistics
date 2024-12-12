@@ -4,6 +4,7 @@ import com.sparta.fifteen.vpo.application.dto.order.CreateDeliveryInfoDto;
 import com.sparta.fifteen.vpo.application.dto.order.CreateOrderDetailDto;
 import com.sparta.fifteen.vpo.application.dto.order.CreateOrderDto;
 import com.sparta.fifteen.vpo.application.dto.order.OrderResponse;
+import com.sparta.fifteen.vpo.application.dto.product.ProductResponse;
 import com.sparta.fifteen.vpo.domain.model.Order;
 import com.sparta.fifteen.vpo.domain.model.OrderDetail;
 import com.sparta.fifteen.vpo.domain.model.Product;
@@ -11,9 +12,11 @@ import com.sparta.fifteen.vpo.domain.model.Vendor;
 import com.sparta.fifteen.vpo.domain.repository.OrderRepository;
 import com.sparta.fifteen.vpo.domain.repository.ProductRepository;
 import com.sparta.fifteen.vpo.domain.repository.VendorRepository;
-import com.sparta.fifteen.vpo.domain.service.OrderProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.filter.OrderedFormContentFilter;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +28,6 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderProductService orderProductService;
     private final ProductRepository productRepository;
     private final VendorRepository vendorRepository;
     private final OrderedFormContentFilter formContentFilter;
@@ -69,12 +71,26 @@ public class OrderService {
         // 주문 저장
         orderRepository.save(order);
 
-        return OrderResponse.of(order, orderDetailsRequest, deliveryRequest);
+        return OrderResponse.of(order);
+    }
+
+    public Page<OrderResponse> getOrders(Pageable pageable) {
+        Page<Order> orders = orderRepository.findAll(pageable);
+
+        List<OrderResponse> contents = orders.getContent().stream().map(OrderResponse::of).toList();
+
+        return new PageImpl<>(contents, pageable, orders.getSize());
+    }
+
+    public Object getOrder(UUID orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow();
+        return OrderResponse.of(order);
     }
 
     // 주문 수정은 배달이 상품 준비중일때만 가능
     // 1. 요청사항
-    // 2.delivery 정보를 수정하면 배달에도 다시 전달을 해야함
+    // 2. delivery 정보를 수정하면 배달에도 다시 전달을 해야함
     // 3. 수량을 조정하면 orderDetail 수정
-    //
+    // 주문취소 put
+    // 주문을 .. .. 배송담당자
 }
