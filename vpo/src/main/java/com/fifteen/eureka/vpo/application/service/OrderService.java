@@ -1,5 +1,7 @@
 package com.fifteen.eureka.vpo.application.service;
 
+import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
+import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.vpo.application.dto.order.*;
 import com.fifteen.eureka.vpo.domain.model.Order;
 import com.fifteen.eureka.vpo.domain.model.OrderDetail;
@@ -40,11 +42,11 @@ public class OrderService {
     public OrderResponse createOrder(CreateOrderDto orderRequest, List<CreateOrderDetailDto> orderDetailsRequest, CreateDeliveryInfoDto deliveryRequest) {
 
         Vendor receiver = vendorRepository.findById(orderRequest.getReceiverId())
-                .orElseThrow(() -> new IllegalArgumentException("Receiver not found"));
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
 
         Vendor supplier = vendorRepository.findById(orderRequest.getSupplierId())
-                .orElseThrow(() -> new IllegalArgumentException("Supplier not found"));
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
 
         Order order = Order.create(
@@ -65,11 +67,13 @@ public class OrderService {
 //        //response 객체던 id만 받던
 //        UUID deliveryId = Optional.ofNullable(deliveryClient.createDelivery(createDeliveryDto));
 
+        order.addDelivery(UUID.fromString("a3765f91-67d8-42e8-97dc-8e851c29e049"));
+
         // orderDetail 추가
         for (CreateOrderDetailDto OrderDetailDto : orderDetailsRequest) {
 
             Product product = productRepository.findById(OrderDetailDto.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                    .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
             order.addOrderDetails(
                     OrderDetail.create(order, product, OrderDetailDto.getQuantity())
@@ -80,8 +84,8 @@ public class OrderService {
 
         order.calculateTotalPrice();
 
-        order.addDelivery(UUID.fromString("a3765f91-67d8-42e8-97dc-8e851c29e049"));
 
+        //주문번호 로직 구현필요
         order.addOrderNumber("orderNumber");
 
         orderRepository.save(order);
@@ -116,7 +120,8 @@ public class OrderService {
     public OrderResponse updateOrder(UUID orderId, UpdateOrderDto orderRequest, List<UpdateOrderDetailDto> orderDetailsRequest) {
 
         //order
-        Order order = orderRepository.findById(orderId).orElseThrow();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
 
         // 공급업체 변경 처리
@@ -129,7 +134,7 @@ public class OrderService {
         // 수령업체 변경 처리
         if (!order.getReceiver().getVendorId().equals(orderRequest.getReceiverId())) {
             Vendor newReceiver = vendorRepository.findById(orderRequest.getReceiverId())
-                    .orElseThrow(() -> new EntityNotFoundException("Receiver not found"));
+                    .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
             order.updateReceiver(newReceiver);
         }
 
@@ -150,14 +155,16 @@ public class OrderService {
     }
     @Transactional
     public OrderResponse cancelOrder(UUID orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
         order.cancel();
         return OrderResponse.of(order);
     }
 
 
     public OrderResponse deleteOrder(UUID orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
         orderRepository.delete(order);
         return OrderResponse.of(order);
     }

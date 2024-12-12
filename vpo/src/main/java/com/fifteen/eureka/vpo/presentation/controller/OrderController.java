@@ -1,14 +1,16 @@
 package com.fifteen.eureka.vpo.presentation.controller;
 
+import com.fifteen.eureka.common.response.ApiResponse;
+import com.fifteen.eureka.common.response.ResSuccessCode;
 import com.fifteen.eureka.vpo.application.dto.order.OrderResponse;
 import com.fifteen.eureka.vpo.application.service.OrderService;
 import com.fifteen.eureka.vpo.presentation.request.order.CreateOrderRequest;
 import com.fifteen.eureka.vpo.presentation.request.order.UpdateOrderRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -21,9 +23,9 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<?> createOrder(@RequestBody CreateOrderRequest request) {
+    public ApiResponse<?> createOrder(@Valid @RequestBody CreateOrderRequest request) {
 
-        return ResponseEntity.ok(orderService.createOrder(
+        return ApiResponse.OK(ResSuccessCode.CREATED, orderService.createOrder(
                 request.toDto(),
                 request.getOrderDetails().stream().map(CreateOrderRequest.CreateOrderDetailRequest::toDto).toList(),
                 request.getDelivery().toDto()
@@ -31,21 +33,21 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<OrderResponse>> getOrders(@PageableDefault(sort = "orderNumber") Pageable pageable) {
-        return ResponseEntity.ok(orderService.getOrders(pageable));
+    public ApiResponse<Page<OrderResponse>> getOrders(@PageableDefault(sort = "orderNumber") Pageable pageable) {
+        return ApiResponse.OK(ResSuccessCode.SUCCESS, orderService.getOrders(pageable));
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<?> getOrder(@PathVariable UUID orderId) {
-        return ResponseEntity.ok(orderService.getOrder(orderId));
+    public ApiResponse<?> getOrder(@PathVariable UUID orderId) {
+        return ApiResponse.OK(ResSuccessCode.SUCCESS, orderService.getOrder(orderId));
     }
 
     @PutMapping("/{orderId}")
-    public ResponseEntity<?> updateOrder(
+    public ApiResponse<?> updateOrder(
             @PathVariable UUID orderId,
-            @RequestBody UpdateOrderRequest request) {
+            @Valid @RequestBody UpdateOrderRequest request) {
 
-        return ResponseEntity.ok(orderService.updateOrder(
+        return ApiResponse.OK(ResSuccessCode.UPDATED, orderService.updateOrder(
                 orderId,
                 request.toDto(),
                 request.getOrderDetails().stream().map(UpdateOrderRequest.OrderDetail::toDto).toList()
@@ -53,12 +55,12 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}/cancel")
-    public ResponseEntity<?> cancelOrder(@PathVariable UUID orderId) {
-        return ResponseEntity.ok(orderService.cancelOrder(orderId));
+    public ApiResponse<?> cancelOrder(@PathVariable UUID orderId) {
+        return ApiResponse.OK(ResSuccessCode.UPDATED, orderService.cancelOrder(orderId));
     }
 
     @DeleteMapping("/{orderId}")
-    public ResponseEntity<?> deleteOrder(@PathVariable UUID orderId) {
-        return ResponseEntity.ok(orderService.deleteOrder(orderId));
+    public ApiResponse<?> deleteOrder(@PathVariable UUID orderId) {
+        return ApiResponse.OK(ResSuccessCode.DELETED, orderService.deleteOrder(orderId));
     }
 }
