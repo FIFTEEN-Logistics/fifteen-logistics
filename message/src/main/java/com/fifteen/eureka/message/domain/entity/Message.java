@@ -38,6 +38,12 @@ public class Message extends BaseEntity {
                 .build();
     }
 
+    public void update(Long receiverId, String message, LocalDateTime sendTime) {
+        this.receiverId = receiverId;
+        this.message = message;
+        this.sendTime = sendTime;
+    }
+
     public void sendGeneralDirectMessage(MessageUtil messageUtil) {
         messageUtil.sendGeneralDirectMessage("syhan7516",message);
     }
