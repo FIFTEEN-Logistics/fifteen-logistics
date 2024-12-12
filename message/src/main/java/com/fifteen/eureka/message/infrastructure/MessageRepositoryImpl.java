@@ -4,5 +4,7 @@ import com.fifteen.eureka.message.domain.entity.Message;
 import com.fifteen.eureka.message.domain.repository.MessageRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MessageRepositoryImpl extends JpaRepository<Message,Long>, MessageRepository {
+import java.util.UUID;
+
+public interface MessageRepositoryImpl extends JpaRepository<Message, UUID>, MessageRepository {
 }
