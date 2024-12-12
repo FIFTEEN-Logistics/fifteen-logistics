@@ -1,4 +1,4 @@
-package com.fifteen.eureka.delivery.application.dto;
+package com.fifteen.eureka.delivery.application.dto.hub;
 
 import java.util.UUID;
 

@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fifteen.eureka.delivery.application.dto.HubCreateDto;
+import com.fifteen.eureka.delivery.application.dto.hub.HubCreateDto;
 import com.fifteen.eureka.delivery.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.delivery.domain.model.Hub;
 

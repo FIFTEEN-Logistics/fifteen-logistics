@@ -5,10 +5,10 @@ import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 
-import com.fifteen.eureka.delivery.application.dto.HubCreateDto;
-import com.fifteen.eureka.delivery.application.dto.HubDetailsResponse;
-import com.fifteen.eureka.delivery.application.dto.HubSimpleResponse;
-import com.fifteen.eureka.delivery.application.dto.HubUpdateDto;
+import com.fifteen.eureka.delivery.application.dto.hub.HubCreateDto;
+import com.fifteen.eureka.delivery.application.dto.hub.HubDetailsResponse;
+import com.fifteen.eureka.delivery.application.dto.hub.HubSimpleResponse;
+import com.fifteen.eureka.delivery.application.dto.hub.HubUpdateDto;
 import com.fifteen.eureka.delivery.domain.model.Hub;
 
 public interface HubService {

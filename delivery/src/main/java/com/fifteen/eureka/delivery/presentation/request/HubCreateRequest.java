@@ -2,7 +2,7 @@ package com.fifteen.eureka.delivery.presentation.request;
 
 import java.util.UUID;
 
-import com.fifteen.eureka.delivery.application.dto.HubCreateDto;
+import com.fifteen.eureka.delivery.application.dto.hub.HubCreateDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
