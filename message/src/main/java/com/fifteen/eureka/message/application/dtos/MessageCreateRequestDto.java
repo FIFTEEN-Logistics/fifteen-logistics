@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Builder(access = AccessLevel.PRIVATE)
 public class MessageCreateRequestDto {
 
-    private Long senderId;
     private Long receiverId;
     private String message;
     private LocalDateTime sendTime;
