@@ -1,5 +1,12 @@
 package com.fifteen.eureka.delivery.domain.model;
 
+import java.util.UUID;
+
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
+import com.fifteen.eureka.delivery.common.auditor.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,7 +25,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "p_delivery_manager")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class DeliveryManger {
+@SQLDelete(sql = "UPDATE p_delivery_manager SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
+public class DeliveryManger extends BaseEntity {
 
 	@Id
 	@Column(name = "user_id")
@@ -41,5 +50,11 @@ public class DeliveryManger {
 		this.hub = hub;
 		this.deliverySequence = deliverySequence;
 		this.deliveryManagerType = deliveryManagerType;
+	}
+
+	public void update(Hub hub, DeliveryManagerType deliveryManagerType, int deliverySequence) {
+		this.hub = hub;
+		this.deliveryManagerType = deliveryManagerType;
+		this.deliverySequence = deliverySequence;
 	}
 }
