@@ -8,6 +8,8 @@ import com.fifteen.eureka.vpo.domain.model.Vendor;
 import com.fifteen.eureka.vpo.domain.repository.OrderRepository;
 import com.fifteen.eureka.vpo.domain.repository.ProductRepository;
 import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
+import com.fifteen.eureka.vpo.infrastructure.client.CreateDeliveryDto;
+import com.fifteen.eureka.vpo.infrastructure.client.DeliveryClient;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -31,8 +34,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final VendorRepository vendorRepository;
-    private final OrderedFormContentFilter formContentFilter;
-    private final ProductService productService;
+    private final DeliveryClient deliveryClient;
 
     @Transactional
     public OrderResponse createOrder(CreateOrderDto orderRequest, List<CreateOrderDetailDto> orderDetailsRequest, CreateDeliveryInfoDto deliveryRequest) {
@@ -52,6 +54,18 @@ public class OrderService {
                 supplier
         );
 
+//        // 배달 전달
+//        CreateDeliveryDto createDeliveryDto = CreateDeliveryDto.builder()
+//                .orderId(order.getOrderId())
+//                .deliveryAddress(deliveryRequest.getDeliveryAddress())
+//                .recipient(deliveryRequest.getRecipient())
+//                .recipientSlackId(deliveryRequest.getRecipientSlackId())
+//                .build();
+//
+//        //response 객체던 id만 받던
+//        UUID deliveryId = Optional.ofNullable(deliveryClient.createDelivery(createDeliveryDto));
+
+        // orderDetail 추가
         for (CreateOrderDetailDto OrderDetailDto : orderDetailsRequest) {
 
             Product product = productRepository.findById(OrderDetailDto.getProductId())
