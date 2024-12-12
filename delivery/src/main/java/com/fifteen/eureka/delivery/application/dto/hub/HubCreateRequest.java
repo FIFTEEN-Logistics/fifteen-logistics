@@ -9,7 +9,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class HubCreateDto {
+public class HubCreateRequest {
 	private UUID centralHubId;
 	private Long hubManagerId;
 	private String hubName;

@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fifteen.eureka.delivery.application.dto.hub.HubCreateDto;
+import com.fifteen.eureka.delivery.application.dto.hub.HubCreateRequest;
 import com.fifteen.eureka.delivery.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.delivery.domain.model.Hub;
 
@@ -25,7 +25,7 @@ class HubServiceTest {
 	@Test
 	void createCentralHubTest() {
 	    // given
-		HubCreateDto hubCreateDto = HubCreateDto.builder()
+		HubCreateRequest hubCreateRequest = HubCreateRequest.builder()
 			.centralHubId(null)
 			.hubManagerId(1L)
 			.hubAddress("경기도 이천시 덕평로 257-21")
@@ -35,7 +35,7 @@ class HubServiceTest {
 			.build();
 
 		// when
-		Hub hub = hubService.createHub(hubCreateDto);
+		Hub hub = hubService.createHub(hubCreateRequest);
 
 		// then
 		assertThat(hub).isNotNull();
@@ -48,7 +48,7 @@ class HubServiceTest {
 	@Test
 	void createGeneralHub() {
 	    // given
-		HubCreateDto centralHubCreateDto = HubCreateDto.builder()
+		HubCreateRequest centralHubCreateRequest = HubCreateRequest.builder()
 			.centralHubId(null)
 			.hubManagerId(1L)
 			.hubAddress("경기도 이천시 덕평로 257-21")
@@ -57,9 +57,9 @@ class HubServiceTest {
 			.latitude(127.376218)
 			.build();
 
-		Hub centralHub = hubService.createHub(centralHubCreateDto);
+		Hub centralHub = hubService.createHub(centralHubCreateRequest);
 
-		HubCreateDto generalHubCreateDto = HubCreateDto.builder()
+		HubCreateRequest generalHubCreateRequest = HubCreateRequest.builder()
 			.centralHubId(centralHub.getId())
 			.hubManagerId(2L)
 			.hubAddress("서울특별시 송파구 송파대로 55")
@@ -69,7 +69,7 @@ class HubServiceTest {
 			.build();
 
 	    // when
-		Hub generalHub = hubService.createHub(generalHubCreateDto);
+		Hub generalHub = hubService.createHub(generalHubCreateRequest);
 
 		// then
 		assertThat(generalHub).isNotNull();
@@ -80,7 +80,7 @@ class HubServiceTest {
 	@Test
 	void createGeneralHubWithNotExistedCentralHub() {
 	    // given
-		HubCreateDto hubCreateDto = HubCreateDto.builder()
+		HubCreateRequest hubCreateRequest = HubCreateRequest.builder()
 			.centralHubId(UUID.randomUUID())
 			.hubManagerId(1L)
 			.hubAddress("서울특별시 송파구 송파대로 55")
@@ -91,7 +91,7 @@ class HubServiceTest {
 
 	    // when
 	    // then
-		assertThatThrownBy(() -> hubService.createHub(hubCreateDto))
+		assertThatThrownBy(() -> hubService.createHub(hubCreateRequest))
 			.isInstanceOf(CustomApiException.class)
 			.hasMessage("Not Found");
 	}

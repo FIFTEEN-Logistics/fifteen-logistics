@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.fifteen.eureka.delivery.common.response.ResSuccessCode;
+import com.fifteen.eureka.delivery.application.dto.deliveryManager.DeliveryManagerCreateRequest;
 import com.fifteen.eureka.delivery.application.service.DeliveryManagerService;
 import com.fifteen.eureka.delivery.common.response.ApiResponse;
-import com.fifteen.eureka.delivery.presentation.request.DeliveryManagerCreateRequest;
+import com.fifteen.eureka.delivery.common.response.ResSuccessCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +25,7 @@ public class DeliveryManagerController {
 
 	@PostMapping
 	public ResponseEntity<ApiResponse<?>> createDeliveryManager(@RequestBody DeliveryManagerCreateRequest deliveryManagerCreateRequest) {
-		Long id = deliveryManagerService.createDeliveryManager(deliveryManagerCreateRequest.toDto()).getId();
+		Long id = deliveryManagerService.createDeliveryManager(deliveryManagerCreateRequest).getId();
 		URI location = ServletUriComponentsBuilder
 			.fromCurrentRequest()
 			.path("/{id}")

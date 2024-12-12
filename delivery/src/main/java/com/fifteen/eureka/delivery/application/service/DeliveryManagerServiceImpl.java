@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fifteen.eureka.delivery.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.delivery.common.response.ResErrorCode;
-import com.fifteen.eureka.delivery.application.dto.deliveryManager.DeliveryManagerCreateDto;
+import com.fifteen.eureka.delivery.application.dto.deliveryManager.DeliveryManagerCreateRequest;
 import com.fifteen.eureka.delivery.domain.model.DeliveryManagerType;
 import com.fifteen.eureka.delivery.domain.model.DeliveryManger;
 import com.fifteen.eureka.delivery.domain.model.Hub;
@@ -24,26 +24,26 @@ public class DeliveryManagerServiceImpl implements DeliveryManagerService {
 
 	@Override
 	@Transactional
-	public DeliveryManger createDeliveryManager(DeliveryManagerCreateDto deliveryManagerCreateDto) {
+	public DeliveryManger createDeliveryManager(DeliveryManagerCreateRequest deliveryManagerCreateRequest) {
 		Hub hub = null;
-		if (deliveryManagerCreateDto.getHubId() != null) {
-			hub = hubRepository.findById(deliveryManagerCreateDto.getHubId())
+		if (deliveryManagerCreateRequest.getHubId() != null) {
+			hub = hubRepository.findById(deliveryManagerCreateRequest.getHubId())
 				.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 		}
 
-		int nextSequence = getMaxSequence(deliveryManagerCreateDto) + 1;
+		int nextSequence = getMaxSequence(deliveryManagerCreateRequest) + 1;
 
-		DeliveryManger deliveryManger = deliveryManagerCreateDto.toEntity(hub, nextSequence);
+		DeliveryManger deliveryManger = deliveryManagerCreateRequest.toEntity(hub, nextSequence);
 
 		return deliveryManagerRepository.save(deliveryManger);
 	}
 
-	private int getMaxSequence(DeliveryManagerCreateDto deliveryManagerCreateDto) {
+	private int getMaxSequence(DeliveryManagerCreateRequest deliveryManagerCreateRequest) {
 		int sequence;
-		if (deliveryManagerCreateDto.getDeliveryManagerType() == DeliveryManagerType.HUB) {
+		if (deliveryManagerCreateRequest.getDeliveryManagerType() == DeliveryManagerType.HUB) {
 			sequence = deliveryManagerRepository.findMaxSequenceForHubDeliveryManagers(DeliveryManagerType.HUB);
 		} else {
-			sequence = deliveryManagerRepository.findMaxSequenceForVendorDeliveryManagers(deliveryManagerCreateDto.getHubId(), DeliveryManagerType.VENDOR);
+			sequence = deliveryManagerRepository.findMaxSequenceForVendorDeliveryManagers(deliveryManagerCreateRequest.getHubId(), DeliveryManagerType.VENDOR);
 		}
 		return sequence;
 	}

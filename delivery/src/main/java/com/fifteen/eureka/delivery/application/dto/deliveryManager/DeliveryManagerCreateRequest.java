@@ -11,7 +11,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class DeliveryManagerCreateDto {
+public class DeliveryManagerCreateRequest {
 	private Long userId;
 	private UUID hubId;
 	private DeliveryManagerType deliveryManagerType;

@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class HubUpdateDto {
+public class HubUpdateRequest {
 	private UUID centralHubId;
 	private Long hubManagerId;
 	private String hubName;
