@@ -42,8 +42,11 @@ public class Vendor {
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<Product>();
 
-    @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Order> orders = new ArrayList<Order>();
+    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> suppliedOrders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> receivedOrders = new ArrayList<>();
 
     public static Vendor create(UUID hubId, Long userId, String vendorName, VendorType vendorType, String vendorAddress) {
         return Vendor.builder()
