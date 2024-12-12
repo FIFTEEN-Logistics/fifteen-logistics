@@ -53,6 +53,6 @@ public class Product extends BaseEntity {
 
 
     public void updateQuantity(int quantity) {
-        this.quantity = quantity;
+        this.quantity -= quantity;
     }
 }

@@ -79,7 +79,7 @@ public class OrderService {
                     OrderDetail.create(order, product, OrderDetailDto.getQuantity())
             );
 
-            product.updateQuantity(product.getQuantity() - OrderDetailDto.getQuantity());
+            product.updateQuantity(OrderDetailDto.getQuantity());
         }
 
         order.calculateTotalPrice();
