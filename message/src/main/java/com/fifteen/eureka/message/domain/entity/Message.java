@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "p_slack_message")
@@ -18,7 +19,7 @@ public class Message extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "message_id")
-    private String messsageId;
+    private UUID messsageId;
 
     @Column(name = "receiver_id", nullable = false)
     private Long receiverId;
