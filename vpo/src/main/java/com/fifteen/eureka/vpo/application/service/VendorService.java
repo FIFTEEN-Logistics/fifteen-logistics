@@ -69,6 +69,15 @@ public class VendorService {
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
+//        if(!hubClient.getHub(request.getHubId()).getCode().equals(20000)) {
+//            throw new CustomApiException(ResErrorCode.NOT_FOUND);
+//        }
+//
+//        if(!userClient.getUser(request.getUserId()).getCode().equals(20000)) {
+//            throw new CustomApiException(ResErrorCode.NOT_FOUND);
+//        }
+
+
         vendor.update(
                 request.getHubId(),
                 request.getUserId(),

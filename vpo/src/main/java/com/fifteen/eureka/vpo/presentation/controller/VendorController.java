@@ -29,7 +29,7 @@ public class VendorController {
 
     @GetMapping
     public ApiResponse<Page<VendorResponse>> getVendors(@PageableDefault(
-            sort = "createAt") Pageable pageable) {
+            sort = "createdAt") Pageable pageable) {
         return ApiResponse.OK(ResSuccessCode.SUCCESS, vendorService.getVendors(pageable));
     }
 
