@@ -8,6 +8,8 @@ import com.fifteen.eureka.vpo.domain.repository.OrderRepository;
 import com.fifteen.eureka.vpo.domain.repository.ProductRepository;
 import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
 import com.fifteen.eureka.vpo.infrastructure.client.DeliveryClient;
+import com.fifteen.eureka.vpo.infrastructure.client.MessageClient;
+import com.fifteen.eureka.vpo.infrastructure.client.MessageCreateRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,6 +30,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final VendorRepository vendorRepository;
     private final DeliveryClient deliveryClient;
+    private final MessageClient messageClient;
 
     @Transactional
     public OrderResponse createOrder(CreateOrderDto orderRequest, List<CreateOrderDetailDto> orderDetailsRequest, CreateDeliveryInfoDto deliveryRequest) {
@@ -57,7 +60,7 @@ public class OrderService {
 //                .recipientSlackId(deliveryRequest.getRecipientSlackId())
 //                .build();
 //
-//        //response 객체던 id만 받던
+//        //배달 다받고
 //        UUID deliveryId = Optional.ofNullable(deliveryClient.createDelivery(createDeliveryDto));
 
         order.addDelivery(UUID.fromString("a3765f91-67d8-42e8-97dc-8e851c29e049"));
@@ -86,8 +89,20 @@ public class OrderService {
 
         orderRepository.save(order);
 
+        // 메시지 전송
+//        MessageCreateRequest request = MessageCreateRequest.builder()
+//                .message(createMessageText(OrderResponse.of(order)))//, DeliveryResponse))
+//                .build();
+//
+//        messageClient.createMessage(request);
+
+
         return OrderResponse.of(order);
     }
+
+//    private String createMessageText(OrderResponse orderResponse) {
+//        return "메시지내용";
+//    }
 
     public Page<OrderResponse> getOrders(Pageable pageable) {
         Page<Order> orders = orderRepository.findAll(pageable);
