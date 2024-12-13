@@ -10,6 +10,9 @@ import com.fifteen.eureka.message.presentation.dtos.request.MessageUpdateRequest
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -29,6 +32,15 @@ public class MessageController {
         log.info("메시지 생성 URL 매핑 : OK");
         messageService.createMessage(MessageCreateRequestDto.from(messageCreateRequest));
         return ApiResponse.OK(ResSuccessCode.CREATED);
+    }
+
+    @GetMapping()
+    public ApiResponse<?> getMessages(
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) String search) {
+
+        log.info("메시지 조회 URL 매핑 : OK");
+        return ApiResponse.OK(ResSuccessCode.SUCCESS,messageService.getMessages(pageable,search));
     }
 
     @PatchMapping("/{messageId}")

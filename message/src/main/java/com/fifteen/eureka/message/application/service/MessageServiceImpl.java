@@ -7,10 +7,13 @@ import com.fifteen.eureka.message.application.dtos.MessageUpdateRequestDto;
 import com.fifteen.eureka.message.domain.entity.Message;
 import com.fifteen.eureka.message.domain.repository.MessageRepository;
 import com.fifteen.eureka.message.infrastructure.util.MessageUtil;
-import jakarta.transaction.Transactional;
+import com.fifteen.eureka.message.presentation.dtos.response.MessageGetResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -39,6 +42,14 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<MessageGetResponse> getMessages(Pageable pageable, String search) {
+
+        log.info("메시지 조회 서비스 : START, END");
+        return messageRepository.findAllWithSearch(pageable, search);
+    }
+
+    @Override
     @Transactional
     public void updateMessage(MessageUpdateRequestDto messageUpdateRequestDto, UUID messageId) {
 
@@ -57,7 +68,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     @Transactional
     public void deleteMessage(UUID messageId) {
-        
+
         log.info("메시지 삭제 서비스 : START");
         messageRepository.deleteById(messageId);
         log.info("메시지 삭제 서비스 : END");
