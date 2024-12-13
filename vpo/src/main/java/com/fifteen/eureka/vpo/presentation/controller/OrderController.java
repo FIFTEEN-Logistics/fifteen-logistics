@@ -33,7 +33,7 @@ public class OrderController {
     }
 
     @GetMapping
-    public ApiResponse<Page<OrderResponse>> getOrders(@PageableDefault(sort = "orderNumber") Pageable pageable) {
+    public ApiResponse<Page<OrderResponse>> getOrders(@PageableDefault(sort = "createAt") Pageable pageable) {
         return ApiResponse.OK(ResSuccessCode.SUCCESS, orderService.getOrders(pageable));
     }
 
