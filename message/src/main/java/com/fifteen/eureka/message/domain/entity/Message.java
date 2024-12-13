@@ -40,6 +40,7 @@ public class Message extends BaseEntity {
     public static Message create(Long receiverId, String messengerId, String message) {
         return Message.builder()
                 .receiverId(receiverId)
+                .messengerId(messengerId)
                 .message(message)
                 .sendTime(LocalDateTime.now())
                 .build();
@@ -53,6 +54,6 @@ public class Message extends BaseEntity {
     }
 
     public void sendGeneralDirectMessage(MessageUtil messageUtil) {
-        messageUtil.sendGeneralDirectMessage("syhan7516",message);
+        messageUtil.sendGeneralDirectMessage(messengerId,message);
     }
 }
