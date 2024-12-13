@@ -28,22 +28,26 @@ public class Message extends BaseEntity {
     @Column(name = "receiver_id", nullable = false)
     private Long receiverId;
 
+    @Column(name = "messenger_id")
+    private String messengerId;
+
     @Column(name = "message",nullable = false, columnDefinition="TEXT")
     private String message;
 
     @Column(name = "send_time", nullable = false)
     private LocalDateTime sendTime;
 
-    public static Message create(Long receiverId, String message, LocalDateTime sendTime) {
+    public static Message create(Long receiverId, String messengerId, String message) {
         return Message.builder()
                 .receiverId(receiverId)
                 .message(message)
-                .sendTime(sendTime)
+                .sendTime(LocalDateTime.now())
                 .build();
     }
 
-    public void update(Long receiverId, String message, LocalDateTime sendTime) {
+    public void update(Long receiverId, String messengerId, String message, LocalDateTime sendTime) {
         this.receiverId = receiverId;
+        this.messengerId = messengerId;
         this.message = message;
         this.sendTime = sendTime;
     }

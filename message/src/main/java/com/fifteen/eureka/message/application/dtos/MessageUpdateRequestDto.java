@@ -12,12 +12,14 @@ import java.time.LocalDateTime;
 public class MessageUpdateRequestDto {
 
     private Long receiverId;
+    private String messengerId;
     private String message;
     private LocalDateTime sendTime;
 
     public static MessageUpdateRequestDto from(MessageUpdateRequest messageUpdateRequest) {
         return MessageUpdateRequestDto.builder()
                 .receiverId(messageUpdateRequest.getReceiverId())
+                .messengerId(messageUpdateRequest.getMessengerId())
                 .message(messageUpdateRequest.getMessage())
                 .sendTime(messageUpdateRequest.getSendTime())
                 .build();

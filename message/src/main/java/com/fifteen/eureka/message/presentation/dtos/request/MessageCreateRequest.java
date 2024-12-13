@@ -4,8 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.LocalDateTime;
-
 @Getter
 public class MessageCreateRequest {
 
@@ -13,9 +11,8 @@ public class MessageCreateRequest {
     private Long receiverId;
 
     @NotBlank
+    private String messengerId;
+
+    @NotBlank
     private String message;
-
-    @NotNull
-    private LocalDateTime sendTime;
-
 }

@@ -12,14 +12,14 @@ import java.time.LocalDateTime;
 public class MessageCreateRequestDto {
 
     private Long receiverId;
+    private String messengerId;
     private String message;
-    private LocalDateTime sendTime;
 
     public static MessageCreateRequestDto from(MessageCreateRequest messageCreateRequest) {
         return MessageCreateRequestDto.builder()
                 .receiverId(messageCreateRequest.getReceiverId())
+                .messengerId(messageCreateRequest.getMessengerId())
                 .message(messageCreateRequest.getMessage())
-                .sendTime(messageCreateRequest.getSendTime())
                 .build();
     }
 }

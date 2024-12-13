@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Slf4j
@@ -33,8 +34,8 @@ public class MessageServiceImpl implements MessageService {
 
         Message message = messageRepository.save(Message.create(
                 messageCreateRequestDto.getReceiverId(),
-                messageCreateRequestDto.getMessage(),
-                messageCreateRequestDto.getSendTime()));
+                messageCreateRequestDto.getMessengerId(),
+                messageCreateRequestDto.getMessage()));
 
         message.sendGeneralDirectMessage(messageUtil);
 
@@ -59,6 +60,7 @@ public class MessageServiceImpl implements MessageService {
                         .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
         message.update(messageUpdateRequestDto.getReceiverId(),
+                messageUpdateRequestDto.getMessengerId(),
                 messageUpdateRequestDto.getMessage(),
                 messageUpdateRequestDto.getSendTime());
 
