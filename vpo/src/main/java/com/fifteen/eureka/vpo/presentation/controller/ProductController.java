@@ -29,7 +29,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public ApiResponse<Page<ProductResponse>> getProducts(@PageableDefault(sort = "createAt") Pageable pageable) {
+    public ApiResponse<Page<ProductResponse>> getProducts(@PageableDefault(sort = "createdAt") Pageable pageable) {
         return ApiResponse.OK(ResSuccessCode.SUCCESS, productService.getProducts(pageable));
     }
 

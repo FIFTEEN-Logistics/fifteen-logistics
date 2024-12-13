@@ -7,6 +7,7 @@ import com.fifteen.eureka.vpo.application.dto.product.ProductResponse;
 import com.fifteen.eureka.vpo.application.dto.product.UpdateProductDto;
 import com.fifteen.eureka.vpo.domain.model.Product;
 import com.fifteen.eureka.vpo.domain.model.Vendor;
+import com.fifteen.eureka.vpo.domain.model.VendorType;
 import com.fifteen.eureka.vpo.domain.repository.ProductRepository;
 import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,10 @@ public class ProductService {
 
         Vendor vendor = vendorRepository.findById(request.getVendorId())
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
+
+        if(!vendor.getVendorType().equals(VendorType.SUPPLIER)) {
+            throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 업체는 공급업체가 아닙니다.");
+        }
 
         Product product = Product.create(
                 vendor.getHubId(),
