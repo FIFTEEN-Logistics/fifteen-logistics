@@ -76,7 +76,7 @@ public class OrderService {
                     OrderDetail.create(order, product, OrderDetailDto.getQuantity())
             );
 
-            product.updateQuantity(OrderDetailDto.getQuantity());
+            product.updateQuantity(OrderDetailDto.getQuantity(), order.isCanceled());
         }
 
         order.calculateTotalPrice();
@@ -162,6 +162,14 @@ public class OrderService {
         }
 
         order.cancel();
+
+        for (OrderDetail orderDetail : order.getOrderDetails()) {
+
+            Product product = productRepository.findById(orderDetail.getProduct().getProductId())
+                    .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
+
+            product.updateQuantity(orderDetail.getQuantity(), order.isCanceled());
+        }
 
         return OrderResponse.of(order);
 

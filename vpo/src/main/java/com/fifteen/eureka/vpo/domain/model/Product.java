@@ -56,7 +56,7 @@ public class Product extends BaseEntity {
     }
 
 
-    public void updateQuantity(int quantity) {
-        this.quantity -= quantity;
+    public void updateQuantity(int quantity, boolean isCanceled) {
+        this.quantity = isCanceled ? + quantity : - quantity;
     }
 }
