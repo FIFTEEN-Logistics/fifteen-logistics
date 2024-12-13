@@ -3,19 +3,13 @@ package com.fifteen.eureka.vpo.application.service;
 import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.vpo.application.dto.order.*;
-import com.fifteen.eureka.vpo.domain.model.Order;
-import com.fifteen.eureka.vpo.domain.model.OrderDetail;
-import com.fifteen.eureka.vpo.domain.model.Product;
-import com.fifteen.eureka.vpo.domain.model.Vendor;
+import com.fifteen.eureka.vpo.domain.model.*;
 import com.fifteen.eureka.vpo.domain.repository.OrderRepository;
 import com.fifteen.eureka.vpo.domain.repository.ProductRepository;
 import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
-import com.fifteen.eureka.vpo.infrastructure.client.CreateDeliveryDto;
 import com.fifteen.eureka.vpo.infrastructure.client.DeliveryClient;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.web.servlet.filter.OrderedFormContentFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -23,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,13 +32,13 @@ public class OrderService {
     @Transactional
     public OrderResponse createOrder(CreateOrderDto orderRequest, List<CreateOrderDetailDto> orderDetailsRequest, CreateDeliveryInfoDto deliveryRequest) {
 
-        Vendor receiver = vendorRepository.findById(orderRequest.getReceiverId())
-                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
+        if(orderRequest.getReceiverId().equals(orderRequest.getSupplierId())) {
+            throw new CustomApiException(ResErrorCode.BAD_REQUEST, "공급업체와 수령업체가 같습니다.");
+        }
 
+        Vendor receiver = checkVendorType(orderRequest.getReceiverId(), VendorType.RECEIVER);
 
-        Vendor supplier = vendorRepository.findById(orderRequest.getSupplierId())
-                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
-
+        Vendor supplier = checkVendorType(orderRequest.getSupplierId(), VendorType.SUPPLIER);
 
         Order order = Order.create(
                 orderRequest.getUserId(),
@@ -55,6 +46,8 @@ public class OrderService {
                 receiver,
                 supplier
         );
+
+
 
 //        // 배달 전달
 //        CreateDeliveryDto createDeliveryDto = CreateDeliveryDto.builder()
@@ -72,8 +65,12 @@ public class OrderService {
         // orderDetail 추가
         for (CreateOrderDetailDto OrderDetailDto : orderDetailsRequest) {
 
-            Product product = productRepository.findById(OrderDetailDto.getProductId())
-                    .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
+            Product product = productRepository.findByProductIdAndVendor_VendorId(OrderDetailDto.getProductId(), supplier.getVendorId())
+                    .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 업체에 해당 물건이 존재하지 않습니다."));
+
+            if(product.getQuantity() - OrderDetailDto.getQuantity() < 0 ) {
+                throw new CustomApiException(ResErrorCode.BAD_REQUEST, "주문 상품의 수는 상품의 재고를 넘을 수 없습니다.");
+            }
 
             order.addOrderDetails(
                     OrderDetail.create(order, product, OrderDetailDto.getQuantity())
@@ -83,7 +80,6 @@ public class OrderService {
         }
 
         order.calculateTotalPrice();
-
 
         //주문번호 로직 구현필요
         order.addOrderNumber("orderNumber");
@@ -124,6 +120,7 @@ public class OrderService {
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
 
+
         // 공급업체 변경 처리
 //        if (!order.getSupplier().getVendorId().equals(orderRequest.getSupplierId())) {
 //            Vendor newSupplier = vendorRepository.findById(orderRequest.getSupplierId())
@@ -133,9 +130,10 @@ public class OrderService {
 
         // 수령업체 변경 처리
         if (!order.getReceiver().getVendorId().equals(orderRequest.getReceiverId())) {
-            Vendor newReceiver = vendorRepository.findById(orderRequest.getReceiverId())
-                    .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
-            order.updateReceiver(newReceiver);
+
+            Vendor receiver = checkVendorType(orderRequest.getReceiverId(), VendorType.RECEIVER);
+
+            order.updateReceiver(receiver);
         }
 
         // OrderDetail 변경 처리
@@ -159,9 +157,14 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
+        if(order.isCanceled()) {
+            throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 주문은 이미 취소된 주문입니다.");
+        }
+
         order.cancel();
 
         return OrderResponse.of(order);
+
     }
 
 
@@ -174,6 +177,18 @@ public class OrderService {
 
         return OrderResponse.of(order);
 
+    }
+
+    private Vendor checkVendorType(UUID vendorId, VendorType vendorType) {
+
+        Vendor vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
+
+        if (!vendor.getVendorType().equals(vendorType)) {
+            throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 업체는 " + vendorType.getLabel() + "가 아닙니다.");
+        }
+
+        return vendor;
     }
 
 }

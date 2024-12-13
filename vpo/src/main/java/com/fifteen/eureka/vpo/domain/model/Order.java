@@ -51,11 +51,10 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "receiver_id", nullable = false)
     private Vendor receiver;
 
-
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> orderDetails = new ArrayList<OrderDetail>();
 
-    public static Order create(Long userId, String orderRequest, Vendor supplier, Vendor receiver) {
+    public static Order create(Long userId, String orderRequest, Vendor receiver, Vendor supplier) {
         return Order.builder()
                 .userId(userId)
                 .orderRequest(orderRequest)
@@ -81,12 +80,13 @@ public class Order extends BaseEntity {
 //        this.supplier = newSupplier;
 //    }
 
-    public void updateReceiver(Vendor newReceiver) {
-        this.receiver = newReceiver;
+    public void updateReceiver(Vendor receiver) {
+
+        this.receiver = receiver;
     }
 
-    public void updateOrderRequest(String newRequest) {
-        this.orderRequest = newRequest;
+    public void updateOrderRequest(String orderRequest) {
+        this.orderRequest = orderRequest;
     }
 
     public void calculateTotalPrice() {

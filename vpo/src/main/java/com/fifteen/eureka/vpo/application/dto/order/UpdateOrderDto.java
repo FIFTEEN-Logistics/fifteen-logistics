@@ -14,10 +14,10 @@ public class UpdateOrderDto {
     private UUID receiverId;
     private String orderRequest;
 
-    public static UpdateOrderDto create(UUID supplierId, UUID receiverId, String orderRequest) {
+    public static UpdateOrderDto create(UUID receiverId, UUID supplierId, String orderRequest) {
         return UpdateOrderDto.builder()
-                .supplierId(supplierId)
                 .receiverId(receiverId)
+                .supplierId(supplierId)
                 .orderRequest(orderRequest)
                 .build();
     }

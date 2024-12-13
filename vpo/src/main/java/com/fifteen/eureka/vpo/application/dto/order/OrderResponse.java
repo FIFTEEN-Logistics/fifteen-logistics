@@ -14,8 +14,8 @@ public class OrderResponse {
     private UUID orderId;
     private long totalPrice;
     private Long userId;
-    private UUID supplierId;
     private UUID receiverId;
+    private UUID supplierId;
     private String orderRequest;
     private boolean isDeleted;
     private boolean isCanceled;
@@ -28,8 +28,8 @@ public class OrderResponse {
                 .orderId(order.getOrderId())
                 .totalPrice(order.getTotalPrice())
                 .userId(order.getUserId())
-                .supplierId(order.getSupplier().getVendorId())
                 .receiverId(order.getReceiver().getVendorId())
+                .supplierId(order.getSupplier().getVendorId())
                 .orderRequest(order.getOrderRequest())
                 .isDeleted(order.isDeleted())
                 .isCanceled(order.isCanceled())

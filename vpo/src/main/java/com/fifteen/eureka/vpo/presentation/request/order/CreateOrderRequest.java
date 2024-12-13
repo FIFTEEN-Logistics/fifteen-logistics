@@ -16,11 +16,11 @@ public class CreateOrderRequest {
     @NotNull(message = "주문자 ID는 필수입니다.")
     private Long userId;
 
-    @NotNull(message = "공급 업체 ID는 필수입니다.")
-    private UUID supplierId;
-
     @NotNull(message = "수령 업체 ID는 필수입니다.")
     private UUID receiverId;
+
+    @NotNull(message = "공급 업체 ID는 필수입니다.")
+    private UUID supplierId;
 
     @NotBlank(message = "요청 사항은 필수입니다.")
     @Size(max = 300, message = "요청 사항은 최대 300자까지 입력할 수 있습니다.")

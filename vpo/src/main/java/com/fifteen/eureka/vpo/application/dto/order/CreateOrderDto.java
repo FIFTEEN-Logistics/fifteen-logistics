@@ -15,11 +15,11 @@ public class CreateOrderDto {
     private UUID receiverId;
     private String orderRequest;
 
-    public static CreateOrderDto create(Long userId, UUID supplierId, UUID receiverId, String orderRequest) {
+    public static CreateOrderDto create(Long userId, UUID receiverId, UUID supplierId, String orderRequest) {
         return CreateOrderDto.builder()
                 .userId(userId)
-                .supplierId(supplierId)
                 .receiverId(receiverId)
+                .supplierId(supplierId)
                 .orderRequest(orderRequest)
                 .build();
     }
