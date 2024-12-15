@@ -122,20 +122,6 @@ public class UserServiceImpl implements UserService {
     userRepository.save(user);
   }
 
-  // email 중복 체크 메서드
-  private void checkEmailInUse(String email) {
-    if (userRepository.existsByEmail(email)) {
-      throw new CustomApiException(ResErrorCode.BAD_REQUEST, "Email already in use.");
-    }
-  }
-
-  // username 중복 체크 메서드
-  private void checkUsernameInUse(String username) {
-    if (userRepository.existsByUsername(username)) {
-      throw new CustomApiException(ResErrorCode.BAD_REQUEST, "Username already in use.");
-    }
-  }
-
   @Override
   @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public UserGetListResponseDto findAllUsers(List<Long> idList, Predicate predicate,
@@ -169,5 +155,27 @@ public class UserServiceImpl implements UserService {
         .slackId(user.getSlackId())
         .role(user.getRole())
         .build();
+  }
+
+  @Override
+  @org.springframework.transaction.annotation.Transactional
+  public void deleteUser(Long userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "User not found."));
+    userRepository.delete(user);
+  }
+
+  // email 중복 체크 메서드
+  private void checkEmailInUse(String email) {
+    if (userRepository.existsByEmail(email)) {
+      throw new CustomApiException(ResErrorCode.BAD_REQUEST, "Email already in use.");
+    }
+  }
+
+  // username 중복 체크 메서드
+  private void checkUsernameInUse(String username) {
+    if (userRepository.existsByUsername(username)) {
+      throw new CustomApiException(ResErrorCode.BAD_REQUEST, "Username already in use.");
+    }
   }
 }
