@@ -5,6 +5,7 @@ import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.common.response.ApiResponse;
 import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.user.infrastructure.config.FilterConfig;
+import com.fifteen.eureka.user.infrastructure.jwt.JwtTokenValidator;
 import com.fifteen.eureka.user.infrastructure.repository.RedisTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -24,7 +25,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class AuthenticationFilter extends OncePerRequestFilter {
 
-  private final JwtTokenProvider jwtTokenProvider;
+  private final JwtTokenValidator jwtTokenValidator;
   private final RedisTokenRepository redisTokenRepository;
 
   // 필터 제외 경로
@@ -63,11 +64,11 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "Access token is blacklisted");
       }
 
-      // 토큰 유효성 검증
-      jwtTokenProvider.validateToken(accessToken);
+      // 액세스 토큰 유효성 검증
+      jwtTokenValidator.validateAccessToken(accessToken);
 
       // SecurityContext 설정
-      Claims claims = jwtTokenProvider.extractClaims(accessToken);
+      Claims claims = jwtTokenValidator.extractClaims(accessToken);
       setAuthentication(request, claims);
 
       filterChain.doFilter(request, response); // 다음 필터로 진행
