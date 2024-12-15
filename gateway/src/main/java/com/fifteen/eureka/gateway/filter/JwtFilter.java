@@ -132,20 +132,12 @@ public class JwtFilter extends AbstractGatewayFilterFactory<JwtFilter.Config> {
 
   // JWT 토큰 유효성 검증 (액세스 토큰용)
   public void validateToken(String accessToken) {
-    try {
-      Claims claims = extractClaims(accessToken);
+    Claims claims = extractClaims(accessToken);
 
-      // type 필드 존재 여부와 값 확인
-      String tokenType = claims.get("type", String.class);
-      if (!"access".equals(tokenType)) {
-        throw new GatewayException(HttpStatus.UNAUTHORIZED, "Not an access token");
-      }
-
-      // 검증 성공
-    } catch (ExpiredJwtException e) {
-      throw new GatewayException(HttpStatus.UNAUTHORIZED, "Access token has expired");
-    } catch (JwtException | IllegalArgumentException e) {
-      throw new GatewayException(HttpStatus.UNAUTHORIZED, "Invalid Access Token");
+    // type 필드 존재 여부와 값 확인
+    String tokenType = claims.get("type", String.class);
+    if (!"access".equals(tokenType)) {
+      throw new GatewayException(HttpStatus.UNAUTHORIZED, "Not an access token");
     }
   }
 
