@@ -2,6 +2,7 @@ package com.fifteen.eureka.user.application.service;
 
 import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.common.response.ResErrorCode;
+import com.fifteen.eureka.user.application.dto.AuthInfoResponseDto;
 import com.fifteen.eureka.user.application.dto.LoginRequestDto;
 import com.fifteen.eureka.user.application.dto.LoginResponseDto;
 import com.fifteen.eureka.user.domain.model.ApprovalStatus;
@@ -103,6 +104,25 @@ public class AuthServiceImpl implements AuthService {
         .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "User not found"));
 
     return jwtTokenProvider.createAccessToken(user.getId(), user.getUsername(), user.getRole());
+  }
+
+  @Override
+  @Transactional
+  public AuthInfoResponseDto validateToken(String accessToken) {
+    // 블랙리스트 확인
+    if (redisTokenRepository.isBlacklisted(accessToken)) {
+      throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "Access token is blacklisted");
+    }
+    // 유효성 검증
+    if (!jwtTokenProvider.validateToken(accessToken)) {
+      throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "Invalid or expired token");
+    }
+    // 검증된 유저정보 반환
+    Long userId = jwtTokenProvider.getUserId(accessToken);
+    String username = jwtTokenProvider.getUsername(accessToken);
+    String role = jwtTokenProvider.getRole(accessToken);
+
+    return new AuthInfoResponseDto(userId, username, role);
   }
 }
 
