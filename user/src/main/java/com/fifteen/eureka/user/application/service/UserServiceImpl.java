@@ -84,10 +84,10 @@ public class UserServiceImpl implements UserService {
 
     // 이메일 중복 검증 (새로운 이메일이 기존 이메일과 다를 경우에만 검증)
     if (requestDto.getEmail() != null && !requestDto.getEmail().isBlank() &&
-        !user.getEmail().equals(requestDto.getEmail()) &&
-        userRepository.existsByEmail(requestDto.getEmail())) {
-      throw new CustomApiException(ResErrorCode.BAD_REQUEST, "Email already in use.");
+        !user.getEmail().equals(requestDto.getEmail())) {
+      checkEmailInUse(requestDto.getEmail());
     }
+
 
     // 동일 값 검증
     List<String> unchangedFields = new ArrayList<>();
