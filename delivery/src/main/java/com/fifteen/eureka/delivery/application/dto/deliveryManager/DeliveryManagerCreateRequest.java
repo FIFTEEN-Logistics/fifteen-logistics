@@ -2,8 +2,8 @@ package com.fifteen.eureka.delivery.application.dto.deliveryManager;
 
 import java.util.UUID;
 
+import com.fifteen.eureka.delivery.domain.model.DeliveryManager;
 import com.fifteen.eureka.delivery.domain.model.DeliveryManagerType;
-import com.fifteen.eureka.delivery.domain.model.DeliveryManger;
 import com.fifteen.eureka.delivery.domain.model.Hub;
 
 import lombok.Builder;
@@ -16,8 +16,8 @@ public class DeliveryManagerCreateRequest {
 	private UUID hubId;
 	private DeliveryManagerType deliveryManagerType;
 
-	public DeliveryManger toEntity(Hub hub, int sequence) {
-		return DeliveryManger.builder()
+	public DeliveryManager toEntity(Hub hub, int sequence) {
+		return DeliveryManager.builder()
 			.id(userId)
 			.hub(hub)
 			.deliverySequence(sequence)

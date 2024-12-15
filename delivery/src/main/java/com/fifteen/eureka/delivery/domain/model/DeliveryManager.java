@@ -1,7 +1,5 @@
 package com.fifteen.eureka.delivery.domain.model;
 
-import java.util.UUID;
-
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
@@ -27,7 +25,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE p_delivery_manager SET is_deleted = true WHERE id = ?")
 @Where(clause = "is_deleted = false")
-public class DeliveryManger extends BaseEntity {
+public class DeliveryManager extends BaseEntity {
 
 	@Id
 	@Column(name = "user_id")
@@ -45,7 +43,7 @@ public class DeliveryManger extends BaseEntity {
 	private DeliveryManagerType deliveryManagerType;
 
 	@Builder
-	private DeliveryManger(Long id, Hub hub, int deliverySequence, DeliveryManagerType deliveryManagerType) {
+	private DeliveryManager(Long id, Hub hub, int deliverySequence, DeliveryManagerType deliveryManagerType) {
 		this.id = id;
 		this.hub = hub;
 		this.deliverySequence = deliverySequence;

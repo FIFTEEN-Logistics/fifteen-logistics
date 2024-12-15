@@ -10,7 +10,7 @@ import com.fifteen.eureka.delivery.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.delivery.common.response.ResErrorCode;
 import com.fifteen.eureka.delivery.application.dto.deliveryManager.DeliveryManagerCreateRequest;
 import com.fifteen.eureka.delivery.domain.model.DeliveryManagerType;
-import com.fifteen.eureka.delivery.domain.model.DeliveryManger;
+import com.fifteen.eureka.delivery.domain.model.DeliveryManager;
 import com.fifteen.eureka.delivery.domain.model.Hub;
 import com.fifteen.eureka.delivery.domain.repository.DeliveryManagerRepository;
 import com.fifteen.eureka.delivery.domain.repository.HubRepository;
@@ -30,7 +30,7 @@ public class DeliveryManagerServiceImpl implements DeliveryManagerService {
 
 	@Override
 	@Transactional
-	public DeliveryManger createDeliveryManager(DeliveryManagerCreateRequest deliveryManagerCreateRequest) {
+	public DeliveryManager createDeliveryManager(DeliveryManagerCreateRequest deliveryManagerCreateRequest) {
 		Hub hub = null;
 		if (deliveryManagerCreateRequest.getHubId() != null) {
 			hub = hubRepository.findById(deliveryManagerCreateRequest.getHubId())
@@ -40,15 +40,15 @@ public class DeliveryManagerServiceImpl implements DeliveryManagerService {
 		// 최대 시퀀스 조회 후 그 다음 시퀀스로 지정
 		int nextSequence = getMaxSequence(deliveryManagerCreateRequest.getDeliveryManagerType(), deliveryManagerCreateRequest.getHubId()) + 1;
 
-		DeliveryManger deliveryManger = deliveryManagerCreateRequest.toEntity(hub, nextSequence);
+		DeliveryManager deliveryManager = deliveryManagerCreateRequest.toEntity(hub, nextSequence);
 
-		return deliveryManagerRepository.save(deliveryManger);
+		return deliveryManagerRepository.save(deliveryManager);
 	}
 
 	@Override
 	@Transactional
 	public void updateDeliveryManager(Long userId, DeliveryManagerUpdateRequest deliveryManagerUpdateRequest) {
-		DeliveryManger deliveryManger = deliveryManagerRepository.findById(userId)
+		DeliveryManager deliveryManager = deliveryManagerRepository.findById(userId)
 			.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
 		Hub hub = null;
@@ -57,7 +57,7 @@ public class DeliveryManagerServiceImpl implements DeliveryManagerService {
 				.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 		}
 
-		deliveryManger.update(
+		deliveryManager.update(
 			hub,
 			deliveryManagerUpdateRequest.getDeliveryManagerType(),
 			getMaxSequence(deliveryManagerUpdateRequest.getDeliveryManagerType(), deliveryManagerUpdateRequest.getHubId()) + 1
