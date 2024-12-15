@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -83,5 +84,12 @@ public class UserController {
     UserGetResponseDto user = userService.findUserById(userId, currentUsername, role);
 
     return ResponseEntity.ok(ApiResponse.OK(ResSuccessCode.FETCHED, user));
+  }
+
+  @RoleCheck("ROLE_ADMIN_MASTER")
+  @DeleteMapping("/users/{userId}")
+  public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
+    userService.deleteUser(userId);
+    return ResponseEntity.ok(ApiResponse.OK(ResSuccessCode.DELETED));
   }
 }

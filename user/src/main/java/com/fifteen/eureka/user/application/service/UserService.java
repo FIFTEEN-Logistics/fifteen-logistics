@@ -21,4 +21,6 @@ public interface UserService {
   UserGetListResponseDto findAllUsers(List<Long> idList, Predicate predicate, Pageable pageable);
 
   UserGetResponseDto findUserById(Long userId, String currentUsername, Role currentRole);
+
+  void deleteUser(Long userId);
 }
