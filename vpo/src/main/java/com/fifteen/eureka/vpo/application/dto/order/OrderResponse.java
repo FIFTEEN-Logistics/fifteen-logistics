@@ -12,6 +12,7 @@ import java.util.UUID;
 @Builder(access = AccessLevel.PRIVATE)
 public class OrderResponse {
     private UUID orderId;
+    private String orderNumber;
     private long totalPrice;
     private Long userId;
     private UUID receiverId;
@@ -22,10 +23,10 @@ public class OrderResponse {
 
     private List<OrderDetailResponse> orderDetails;
 
-    //delivery는 나중에 실제 딜리버리로 바꾸김 + orderdetails동
     public static OrderResponse of(Order order) {
         return OrderResponse.builder()
                 .orderId(order.getOrderId())
+                .orderNumber(order.getOrderNumber())
                 .totalPrice(order.getTotalPrice())
                 .userId(order.getUserId())
                 .receiverId(order.getReceiver().getVendorId())
