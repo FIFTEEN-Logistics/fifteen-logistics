@@ -2,13 +2,20 @@ package com.fifteen.eureka.delivery.application.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fifteen.eureka.delivery.application.dto.delivery.DeliveryCreateRequest;
+import com.fifteen.eureka.delivery.application.dto.delivery.DeliveryDetailsResponse;
+import com.fifteen.eureka.delivery.application.dto.delivery.DeliveryRouteDetails;
+import com.fifteen.eureka.delivery.application.dto.delivery.DeliverySimpleResponse;
 import com.fifteen.eureka.delivery.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.delivery.common.response.ResErrorCode;
 import com.fifteen.eureka.delivery.domain.model.Delivery;
@@ -22,6 +29,7 @@ import com.fifteen.eureka.delivery.domain.repository.DeliveryManagerRepository;
 import com.fifteen.eureka.delivery.domain.repository.DeliveryRepository;
 import com.fifteen.eureka.delivery.domain.repository.HubRepository;
 import com.fifteen.eureka.delivery.domain.repository.HubRouteGuideRepository;
+import com.fifteen.eureka.delivery.infrastructure.client.UserClient;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +42,8 @@ public class DeliveryServiceImpl implements DeliveryService {
 	private final HubRepository hubRepository;
 	private final HubRouteGuideRepository hubRouteGuideRepository;
 	private final DeliveryManagerRepository deliveryManagerRepository;
+
+	private final UserClient userClient;
 
 	private final RedisTemplate<String, Integer> redisTemplate;
 
@@ -52,6 +62,40 @@ public class DeliveryServiceImpl implements DeliveryService {
 		getDeliveryRouteList(startHub, endHub).forEach(delivery::addDeliveryRoute);
 
 		return deliveryRepository.save(delivery);
+	}
+
+	@Override
+	public Page<DeliverySimpleResponse> getDeliveries(Pageable pageable) {
+		Page<Delivery> deliveries = deliveryRepository.findAll(pageable);
+		List<DeliverySimpleResponse> deliverySimpleResponses = deliveries.getContent().stream()
+			.map(DeliverySimpleResponse::from)
+			.toList();
+		return new PageImpl<>(deliverySimpleResponses, deliveries.getPageable(), deliveries.getTotalElements());
+	}
+
+	@Override
+	public DeliveryDetailsResponse getDelivery(UUID deliveryId) {
+		Delivery delivery = deliveryRepository.findByIdWithDeliveryRoutes(deliveryId)
+			.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "배송 정보를 찾을 수 없습니다."));
+
+		String vendorDeliveryManagerName = userClient.getUser(delivery.getVendorDeliveryManager().getId()).getData().getUsername();
+
+		List<DeliveryRouteDetails> deliveryRouteDetailsList = delivery.getDeliveryRoutes().stream()
+			.map((deliveryRoute -> {
+				String deliveryManagerName = userClient.getUser(deliveryRoute.getDeliveryManager().getId())
+					.getData()
+					.getUsername();
+				DeliveryRouteDetails deliveryRouteDetails = DeliveryRouteDetails.from(deliveryRoute);
+				deliveryRouteDetails.setDeliveryManagerName(deliveryManagerName);
+				return deliveryRouteDetails;
+			}))
+			.toList();
+
+		DeliveryDetailsResponse deliveryDetailsResponse = DeliveryDetailsResponse.from(delivery);
+		deliveryDetailsResponse.setVendorDeliveryManagerName(vendorDeliveryManagerName);
+		deliveryDetailsResponse.setDeliveryRoutes(deliveryRouteDetailsList);
+
+		return deliveryDetailsResponse;
 	}
 
 	private List<DeliveryRoute> getDeliveryRouteList(Hub startHub, Hub endHub) {
