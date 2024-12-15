@@ -1,7 +1,5 @@
 package com.fifteen.eureka.vpo.application.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.vpo.application.dto.order.*;
@@ -9,21 +7,17 @@ import com.fifteen.eureka.vpo.domain.model.*;
 import com.fifteen.eureka.vpo.domain.repository.OrderRepository;
 import com.fifteen.eureka.vpo.domain.repository.ProductRepository;
 import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
+import com.fifteen.eureka.vpo.domain.service.OrderProductService;
 import com.fifteen.eureka.vpo.infrastructure.client.DeliveryClient;
 import com.fifteen.eureka.vpo.infrastructure.client.MessageClient;
-import com.fifteen.eureka.vpo.infrastructure.client.MessageCreateRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.RequestEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +31,7 @@ public class OrderService {
     private final VendorRepository vendorRepository;
     private final DeliveryClient deliveryClient;
     private final MessageClient messageClient;
+    private final OrderProductService orderProductService;
 
     @Transactional
     public OrderResponse createOrder(CreateOrderDto orderRequest, List<CreateOrderDetailDto> orderDetailsRequest, CreateDeliveryInfoDto deliveryRequest) {
@@ -81,7 +76,8 @@ public class OrderService {
                     OrderDetail.create(order, product, OrderDetailDto.getQuantity())
             );
 
-            product.updateQuantity(OrderDetailDto.getQuantity(), order.isCanceled());
+            orderProductService.updateProduct(product,OrderDetailDto.getQuantity(), order.isCanceled());
+
         }
 
         order.calculateTotalPrice();
@@ -180,7 +176,7 @@ public class OrderService {
             Product product = productRepository.findById(orderDetail.getProduct().getProductId())
                     .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
-            product.updateQuantity(orderDetail.getQuantity(), order.isCanceled());
+            orderProductService.updateProduct(product,orderDetail.getQuantity(), order.isCanceled());
         }
 
         return OrderResponse.of(order);
