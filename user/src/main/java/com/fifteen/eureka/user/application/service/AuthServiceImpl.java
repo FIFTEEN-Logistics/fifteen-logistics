@@ -9,10 +9,16 @@ import com.fifteen.eureka.user.domain.model.User;
 import com.fifteen.eureka.user.infrastructure.repository.RedisTokenRepository;
 import com.fifteen.eureka.user.infrastructure.repository.UserRepository;
 import com.fifteen.eureka.user.infrastructure.security.JwtTokenProvider;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @Service
 @RequiredArgsConstructor
@@ -74,6 +80,29 @@ public class AuthServiceImpl implements AuthService {
     if (!isBlacklisted) {
       throw new CustomApiException(ResErrorCode.INTERNAL_SERVER_ERROR, "Failed to add access token to blacklist");
     }
+  }
+
+  @Override
+  @Transactional
+  public String refreshAccessToken(String refreshToken) {
+
+    // 리프레시 토큰 유효성 검사
+    Claims claims;
+    try {
+      claims = jwtTokenProvider.extractClaims(refreshToken);
+    } catch (ExpiredJwtException e) {
+      throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "Refresh token has expired");
+    } catch (JwtException | IllegalArgumentException e) {
+      throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "Invalid refresh token");
+    }
+
+    // 유저정보 가져와 액세스 토큰 생성
+    Long userId = Long.parseLong(claims.getSubject());
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "User not found"));
+
+    return jwtTokenProvider.createAccessToken(user.getId(), user.getUsername(), user.getRole());
   }
 }
 
