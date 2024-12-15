@@ -7,7 +7,9 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.annotations.Where;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +23,11 @@ import java.util.UUID;
 @Where(clause = "is_deleted = false")
 public class Order extends BaseEntity {
 
+    private static final int MAX_NUMBER = 999;
+    private static final char MAX_CHAR = 'Z';
+    private static int numberSequence = 0;
+    private static char charSequence = 'A';
+
     @Id
     @UuidGenerator
     private UUID orderId;
@@ -31,7 +38,7 @@ public class Order extends BaseEntity {
     // nullable = false
     private UUID deliveryId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String orderNumber;
 
     @Column(nullable = false)
@@ -61,6 +68,7 @@ public class Order extends BaseEntity {
                 .supplier(supplier)
                 .receiver(receiver)
                 .orderDetails(new ArrayList<>())
+                .orderNumber(createOrderNumber())
                 .build();
     }
 
@@ -72,16 +80,23 @@ public class Order extends BaseEntity {
         this.deliveryId = deliveryId;
     }
 
-    public void addOrderNumber(String orderNumber) {
-        this.orderNumber = orderNumber;
+    private static String createOrderNumber() {
+        String currentDate = new SimpleDateFormat("yyyyMMddHH").format(new Date());
+
+        if (numberSequence > MAX_NUMBER) {
+            numberSequence = 0;
+            charSequence++;
+            if (charSequence > MAX_CHAR) {
+                charSequence = 'A';
+            }
+        }
+
+        String Suffix = String.format("%c%03d", charSequence, numberSequence);
+        numberSequence++;
+        return currentDate + Suffix;
     }
 
-//    public void updateSupplier(Vendor newSupplier) {
-//        this.supplier = newSupplier;
-//    }
-
     public void updateReceiver(Vendor receiver) {
-
         this.receiver = receiver;
     }
 
@@ -98,6 +113,5 @@ public class Order extends BaseEntity {
     public void cancel() {
         this.isCanceled = true;
     }
-
 
 }

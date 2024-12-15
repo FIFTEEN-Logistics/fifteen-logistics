@@ -1,5 +1,7 @@
 package com.fifteen.eureka.vpo.application.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.vpo.application.dto.order.*;
@@ -12,12 +14,16 @@ import com.fifteen.eureka.vpo.infrastructure.client.MessageClient;
 import com.fifteen.eureka.vpo.infrastructure.client.MessageCreateRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.RequestEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,10 +40,6 @@ public class OrderService {
 
     @Transactional
     public OrderResponse createOrder(CreateOrderDto orderRequest, List<CreateOrderDetailDto> orderDetailsRequest, CreateDeliveryInfoDto deliveryRequest) {
-
-        if(orderRequest.getReceiverId().equals(orderRequest.getSupplierId())) {
-            throw new CustomApiException(ResErrorCode.BAD_REQUEST, "공급업체와 수령업체가 같습니다.");
-        }
 
         Vendor receiver = checkVendorType(orderRequest.getReceiverId(), VendorType.RECEIVER);
 
@@ -69,7 +71,7 @@ public class OrderService {
         for (CreateOrderDetailDto OrderDetailDto : orderDetailsRequest) {
 
             Product product = productRepository.findByProductIdAndVendor_VendorId(OrderDetailDto.getProductId(), supplier.getVendorId())
-                    .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 업체에 해당 물건이 존재하지 않습니다."));
+                    .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 업체에 해당 상품이 존재하지 않습니다."));
 
             if(product.getQuantity() - OrderDetailDto.getQuantity() < 0 ) {
                 throw new CustomApiException(ResErrorCode.BAD_REQUEST, "주문 상품의 수는 상품의 재고를 넘을 수 없습니다.");
@@ -84,9 +86,6 @@ public class OrderService {
 
         order.calculateTotalPrice();
 
-        //주문번호 로직 구현필요
-        order.addOrderNumber("orderNumber");
-
         orderRepository.save(order);
 
         // 메시지 전송
@@ -100,9 +99,6 @@ public class OrderService {
         return OrderResponse.of(order);
     }
 
-//    private String createMessageText(OrderResponse orderResponse) {
-//        return "메시지내용";
-//    }
 
     public Page<OrderResponse> getOrders(Pageable pageable) {
         Page<Order> orders = orderRepository.findAll(pageable);
@@ -166,6 +162,7 @@ public class OrderService {
         return OrderResponse.of(order);
 
     }
+
     @Transactional
     public OrderResponse cancelOrder(UUID orderId) {
 
