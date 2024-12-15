@@ -4,7 +4,9 @@ import com.fifteen.eureka.common.auditor.AuditorAwareImpl;
 import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.common.role.Role;
+import com.fifteen.eureka.user.application.dto.ApprovalRequestDto;
 import com.fifteen.eureka.user.application.dto.SignupRequestDto;
+import com.fifteen.eureka.user.domain.model.ApprovalStatus;
 import com.fifteen.eureka.user.domain.model.User;
 import com.fifteen.eureka.user.infrastructure.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -49,6 +51,18 @@ public class UserServiceImpl implements UserService {
       // Thread-local 값 초기화
       AuditorAwareImpl.clearManualAuditor();
     }
+  }
+
+  @Override
+  @org.springframework.transaction.annotation.Transactional
+  public void updateApprovalStatus(Long userId, ApprovalRequestDto requestDto) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "User not found."));
+
+    ApprovalStatus newStatus = requestDto.getApprovalStatus();
+
+    user.updateApprovalStatus(newStatus);
+    userRepository.save(user);
   }
 
   // email 중복 체크 메서드
