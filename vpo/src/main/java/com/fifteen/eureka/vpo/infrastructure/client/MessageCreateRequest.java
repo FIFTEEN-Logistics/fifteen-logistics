@@ -1,10 +1,12 @@
 package com.fifteen.eureka.vpo.infrastructure.client;
 
 import lombok.Builder;
+import lombok.Getter;
 
 import java.util.List;
 
 @Builder
+@Getter
 public class MessageCreateRequest {
 
     private Long receiverId;

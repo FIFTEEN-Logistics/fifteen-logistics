@@ -2,10 +2,12 @@ package com.fifteen.eureka.vpo.infrastructure.client;
 
 
 import lombok.Builder;
+import lombok.Getter;
 
 import java.util.UUID;
 
 @Builder
+@Getter
 public class CreateDeliveryDto {
     private UUID orderId;
     private String deliveryAddress;
