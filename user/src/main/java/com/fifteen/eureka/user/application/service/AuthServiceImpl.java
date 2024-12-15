@@ -7,19 +7,15 @@ import com.fifteen.eureka.user.application.dto.LoginRequestDto;
 import com.fifteen.eureka.user.application.dto.LoginResponseDto;
 import com.fifteen.eureka.user.domain.model.ApprovalStatus;
 import com.fifteen.eureka.user.domain.model.User;
+import com.fifteen.eureka.user.infrastructure.jwt.JwtTokenFactory;
+import com.fifteen.eureka.user.infrastructure.jwt.JwtTokenParser;
+import com.fifteen.eureka.user.infrastructure.jwt.JwtTokenValidator;
 import com.fifteen.eureka.user.infrastructure.repository.RedisTokenRepository;
 import com.fifteen.eureka.user.infrastructure.repository.UserRepository;
-import com.fifteen.eureka.user.infrastructure.security.JwtTokenProvider;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +23,9 @@ public class AuthServiceImpl implements AuthService {
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
-  private final JwtTokenProvider jwtTokenProvider;
+  private final JwtTokenFactory jwtTokenFactory;
+  private final JwtTokenParser jwtTokenParser;
+  private final JwtTokenValidator jwtTokenValidator;
   private final RedisTokenRepository redisTokenRepository;
 
   @Override
@@ -46,9 +44,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // 토큰 생성
-    String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getUsername(),
+    String accessToken = jwtTokenFactory.createAccessToken(user.getId(), user.getUsername(),
         user.getRole());
-    String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
+    String refreshToken = jwtTokenFactory.createRefreshToken(user.getId());
 
     // 리프레시 토큰 저장
     boolean isSaved = redisTokenRepository.saveRefreshToken(user.getId(), refreshToken);
@@ -62,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
   @Override
   @Transactional
   public void logout(String accessToken) {
-    Long userId = jwtTokenProvider.getUserId(accessToken);
+    Long userId = jwtTokenParser.getUserId(accessToken);
 
     // 리프레시 토큰 삭제
     boolean tokenDeleted = redisTokenRepository.deleteRefreshToken(userId);
@@ -71,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // 액세스 토큰 남은시간 계산
-    long remainingExpiration = jwtTokenProvider.getExpiration(accessToken) - System.currentTimeMillis();
+    long remainingExpiration = jwtTokenParser.getExpiration(accessToken) - System.currentTimeMillis();
     if (remainingExpiration <= 0) {
       throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "Access token has already expired");
     }
@@ -86,24 +84,16 @@ public class AuthServiceImpl implements AuthService {
   @Override
   @Transactional
   public String refreshAccessToken(String refreshToken) {
-
-    // 리프레시 토큰 유효성 검사
-    Claims claims;
-    try {
-      claims = jwtTokenProvider.extractClaims(refreshToken);
-    } catch (ExpiredJwtException e) {
-      throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "Refresh token has expired");
-    } catch (JwtException | IllegalArgumentException e) {
-      throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "Invalid refresh token");
-    }
+    // 리프레시 토큰 유효성 검증
+    jwtTokenValidator.validateRefreshToken(refreshToken);
 
     // 유저정보 가져와 액세스 토큰 생성
-    Long userId = Long.parseLong(claims.getSubject());
+    Long userId = jwtTokenParser.getUserId(refreshToken);
 
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "User not found"));
 
-    return jwtTokenProvider.createAccessToken(user.getId(), user.getUsername(), user.getRole());
+    return jwtTokenFactory.createAccessToken(user.getId(), user.getUsername(), user.getRole());
   }
 
   @Override
@@ -113,14 +103,13 @@ public class AuthServiceImpl implements AuthService {
     if (redisTokenRepository.isBlacklisted(accessToken)) {
       throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "Access token is blacklisted");
     }
-    // 유효성 검증
-    if (!jwtTokenProvider.validateToken(accessToken)) {
-      throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "Invalid or expired token");
-    }
+    // 액세스 토큰 유효성 검증
+    jwtTokenValidator.validateAccessToken(accessToken);
+
     // 검증된 유저정보 반환
-    Long userId = jwtTokenProvider.getUserId(accessToken);
-    String username = jwtTokenProvider.getUsername(accessToken);
-    String role = jwtTokenProvider.getRole(accessToken);
+    Long userId = jwtTokenParser.getUserId(accessToken);
+    String username = jwtTokenParser.getUsername(accessToken);
+    String role = jwtTokenParser.getRole(accessToken);
 
     return new AuthInfoResponseDto(userId, username, role);
   }
