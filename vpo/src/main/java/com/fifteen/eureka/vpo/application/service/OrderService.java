@@ -48,7 +48,6 @@ public class OrderService {
         );
 
 
-
 //        // 배달 전달
 //        CreateDeliveryDto createDeliveryDto = CreateDeliveryDto.builder()
 //                .orderId(order.getOrderId())
@@ -59,7 +58,6 @@ public class OrderService {
 //
 //        //배달 다받고
 //        UUID deliveryId = Optional.ofNullable(deliveryClient.createDelivery(createDeliveryDto));
-
         order.addDelivery(UUID.fromString("a3765f91-67d8-42e8-97dc-8e851c29e049"));
 
         // orderDetail 추가
@@ -122,20 +120,14 @@ public class OrderService {
     @Transactional
     public OrderResponse updateOrder(UUID orderId, UpdateOrderDto orderRequest, List<UpdateOrderDetailDto> orderDetailsRequest) {
 
-        //order
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
-
-
-
-        // 공급업체 변경 처리
-//        if (!order.getSupplier().getVendorId().equals(orderRequest.getSupplierId())) {
-//            Vendor newSupplier = vendorRepository.findById(orderRequest.getSupplierId())
-//                    .orElseThrow(() -> new EntityNotFoundException("Supplier not found"));
-//            order.updateSupplier(newSupplier);
+        // 배송 상태 확인
+//        if(!deliveryClient.getDelivery(order.getDeliveryId()).getData().getDeliveryStatus.equals("HUB_WATING")) {
+//            throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 주문은 배송 시작상태로 수정이 불가합니다.");
 //        }
 
-        // 수령업체 변경 처리
+        // 수령업체 변경 처리 -> 배달, 슬랙메시지 전송
         if (!order.getReceiver().getVendorId().equals(orderRequest.getReceiverId())) {
 
             Vendor receiver = checkVendorType(orderRequest.getReceiverId(), VendorType.RECEIVER);
@@ -143,12 +135,7 @@ public class OrderService {
             order.updateReceiver(receiver);
         }
 
-        // OrderDetail 변경 처리
-//        if (isOrderDetailsChanged(order, orderDetailsRequest)) {
-//
-//        }
-
-        // 요청사항 변경 처리
+        // 요청사항 변경 처리 -> 배달, 슬랙메시지 전송
         if (!order.getOrderRequest().equals(orderRequest.getOrderRequest())) {
             order.updateOrderRequest(orderRequest.getOrderRequest());
         }
