@@ -6,10 +6,13 @@ import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.common.role.Role;
 import com.fifteen.eureka.user.application.dto.ApprovalRequestDto;
 import com.fifteen.eureka.user.application.dto.SignupRequestDto;
+import com.fifteen.eureka.user.application.dto.UserUpdateRequestDto;
 import com.fifteen.eureka.user.domain.model.ApprovalStatus;
 import com.fifteen.eureka.user.domain.model.User;
 import com.fifteen.eureka.user.infrastructure.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -62,6 +65,52 @@ public class UserServiceImpl implements UserService {
     ApprovalStatus newStatus = requestDto.getApprovalStatus();
 
     user.updateApprovalStatus(newStatus);
+    userRepository.save(user);
+  }
+
+  @Override
+  @org.springframework.transaction.annotation.Transactional
+  public void updateUser(Long userId, UserUpdateRequestDto requestDto) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "User not found"));
+
+    // 이메일 중복 검증 (새로운 이메일이 기존 이메일과 다를 경우에만 검증)
+    if (requestDto.getEmail() != null && !requestDto.getEmail().isBlank() &&
+        !user.getEmail().equals(requestDto.getEmail()) &&
+        userRepository.existsByEmail(requestDto.getEmail())) {
+      throw new CustomApiException(ResErrorCode.BAD_REQUEST, "Email already in use.");
+    }
+
+    // 동일 값 검증
+    List<String> unchangedFields = new ArrayList<>();
+    if (requestDto.getEmail() != null && requestDto.getEmail().equals(user.getEmail())) {
+      unchangedFields.add("email");
+    }
+    if (requestDto.getSlackId() != null && requestDto.getSlackId().equals(user.getSlackId())) {
+      unchangedFields.add("slackId");
+    }
+    if (requestDto.getRole() != null && requestDto.getRole().equals(user.getRole())) {
+      unchangedFields.add("role");
+    }
+    if (requestDto.getPassword() != null && passwordEncoder.matches(requestDto.getPassword(),
+        user.getPassword())) {
+      unchangedFields.add("password");
+    }
+
+    // 동일한 필드 예외 처리
+    if (!unchangedFields.isEmpty()) {
+      throw new CustomApiException(ResErrorCode.BAD_REQUEST,
+          "same as before: " + String.join(", ", unchangedFields));
+    }
+
+    user.updateUserInfo(
+        requestDto.getEmail(),
+        requestDto.getSlackId(),
+        requestDto.getRole(),
+        requestDto.getPassword(),
+        passwordEncoder
+    );
+
     userRepository.save(user);
   }
 

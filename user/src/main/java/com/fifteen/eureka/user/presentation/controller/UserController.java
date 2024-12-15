@@ -5,6 +5,7 @@ import com.fifteen.eureka.common.response.ResSuccessCode;
 import com.fifteen.eureka.common.role.RoleCheck;
 import com.fifteen.eureka.user.application.dto.ApprovalRequestDto;
 import com.fifteen.eureka.user.application.dto.SignupRequestDto;
+import com.fifteen.eureka.user.application.dto.UserUpdateRequestDto;
 import com.fifteen.eureka.user.application.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,5 +37,15 @@ public class UserController {
       @Valid @RequestBody ApprovalRequestDto requestDto) {
     userService.updateApprovalStatus(userId, requestDto);
     return ResponseEntity.ok().body(ApiResponse.OK(ResSuccessCode.UPDATED, "Approval status"));
+  }
+
+  @RoleCheck("ROLE_ADMIN_MASTER")
+  @PatchMapping("/users/{userId}")
+  public ResponseEntity<ApiResponse<Void>> updateUser(
+      @PathVariable Long userId,
+      @Valid @RequestBody UserUpdateRequestDto updateRequestDto) {
+
+    userService.updateUser(userId, updateRequestDto);
+    return ResponseEntity.ok(ApiResponse.OK(ResSuccessCode.UPDATED));
   }
 }
