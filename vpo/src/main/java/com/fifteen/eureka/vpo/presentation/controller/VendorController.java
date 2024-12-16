@@ -38,13 +38,18 @@ public class VendorController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "true") boolean isAsc,
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @RequestHeader("X-UserId") Long currentUserId,
+            @RequestHeader("X-Role") String currentRole) {
         Pageable pageable = PagingUtil.createPageable(page, size, isAsc, sortBy);
         return ApiResponse.OK(ResSuccessCode.SUCCESS, vendorService.getVendors(pageable, keyword));
     }
 
     @GetMapping("/{vendorId}")
-    public ApiResponse<?> getVendor(@PathVariable UUID vendorId) {
+    public ApiResponse<?> getVendor(
+            @PathVariable UUID vendorId,
+            @RequestHeader("X-UserId") Long currentUserId,
+            @RequestHeader("X-Role") String currentRole) {
         return ApiResponse.OK(ResSuccessCode.SUCCESS, vendorService.getVendor(vendorId));
     }
 
