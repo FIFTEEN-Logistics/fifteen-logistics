@@ -2,6 +2,7 @@ package com.fifteen.eureka.message.presentation.controller;
 
 import com.fifteen.eureka.common.response.ApiResponse;
 import com.fifteen.eureka.common.response.ResSuccessCode;
+import com.fifteen.eureka.common.role.RoleCheck;
 import com.fifteen.eureka.message.application.dtos.MessageCreateRequestDto;
 import com.fifteen.eureka.message.application.dtos.MessageUpdateRequestDto;
 import com.fifteen.eureka.message.application.service.MessageService;
@@ -34,6 +35,7 @@ public class MessageController {
         return ApiResponse.OK(ResSuccessCode.CREATED);
     }
 
+    @RoleCheck({"ROLE_ADMIN_MASTER"})
     @GetMapping()
     public ApiResponse<?> getMessages(
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
@@ -43,6 +45,7 @@ public class MessageController {
         return ApiResponse.OK(ResSuccessCode.SUCCESS,messageService.getMessages(pageable,search));
     }
 
+    @RoleCheck({"ROLE_ADMIN_MASTER"})
     @PatchMapping("/{messageId}")
     public ApiResponse<?> updateMessage(
             @Valid @RequestBody MessageUpdateRequest messageUpdateRequest,
@@ -53,6 +56,7 @@ public class MessageController {
         return ApiResponse.OK(ResSuccessCode.UPDATED);
     }
 
+    @RoleCheck({"ROLE_ADMIN_MASTER"})
     @DeleteMapping("/{messageId}")
     public ApiResponse<?> deleteMessage(@PathVariable UUID messageId) {
 
