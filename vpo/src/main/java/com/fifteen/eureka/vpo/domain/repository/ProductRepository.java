@@ -10,6 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface ProductRepository{
+
     Optional<Product> findByProductIdAndVendor_VendorId(UUID productId, UUID vendorId);
 
     Optional<Product> findById(UUID productId);
@@ -18,5 +19,4 @@ public interface ProductRepository{
 
     Product save(Product product);
 
-    Page<Product> findAll(Pageable pageable);
 }
