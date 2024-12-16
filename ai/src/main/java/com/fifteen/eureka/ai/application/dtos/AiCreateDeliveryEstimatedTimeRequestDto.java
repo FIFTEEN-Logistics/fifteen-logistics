@@ -22,7 +22,6 @@ public class AiCreateDeliveryEstimatedTimeRequestDto {
     private List<String> routingHubNames;
     private String deliveryAddress;
     private String deliveryUserName;
-    private String deliveryUserEmail;
 
     public static AiCreateDeliveryEstimatedTimeRequestDto from(AiCreateDeliveryEstimatedTimeRequest aiCreateDeliveryEstimatedTimeRequest) {
         return AiCreateDeliveryEstimatedTimeRequestDto.builder()
@@ -37,7 +36,6 @@ public class AiCreateDeliveryEstimatedTimeRequestDto {
                 .routingHubNames(aiCreateDeliveryEstimatedTimeRequest.getRoutingHubNames())
                 .deliveryAddress(aiCreateDeliveryEstimatedTimeRequest.getDeliveryAddress())
                 .deliveryUserName(aiCreateDeliveryEstimatedTimeRequest.getDeliveryUserName())
-                .deliveryUserEmail(aiCreateDeliveryEstimatedTimeRequest.getDeliveryUserEmail())
                 .build();
     }
     

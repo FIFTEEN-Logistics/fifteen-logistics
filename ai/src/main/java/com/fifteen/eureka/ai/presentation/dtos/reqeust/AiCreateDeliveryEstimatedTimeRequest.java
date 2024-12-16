@@ -42,9 +42,6 @@ public class AiCreateDeliveryEstimatedTimeRequest {
     @NotBlank
     private String deliveryUserName;
 
-    @NotBlank
-    private String deliveryUserEmail;
-
     @Getter
     public static class ProductDetail {
         String productName;

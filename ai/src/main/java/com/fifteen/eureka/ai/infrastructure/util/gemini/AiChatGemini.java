@@ -52,8 +52,7 @@ public class AiChatGemini implements AiChatUtil {
         "발송지 : " + aiCreateDeliveryEstimatedTimeRequestDto.getDepartureHubName() + "\n" +
         "경유지 : " + aiCreateDeliveryEstimatedTimeRequestDto.getRoutingHubNames().toString() + "\n" +
         "도착지 : " + aiCreateDeliveryEstimatedTimeRequestDto.getDeliveryAddress() + "\n" +
-        "배송담당자 : " + aiCreateDeliveryEstimatedTimeRequestDto.getDeliveryUserName() + " / " +
-                aiCreateDeliveryEstimatedTimeRequestDto.getDeliveryUserEmail() + "\n" +
+        "배송담당자 : " + aiCreateDeliveryEstimatedTimeRequestDto.getDeliveryUserName() + "\n" +
                 "------------------------------------------------------------" + "\n" +
                 "최종 발송 시한 : " + estimatedTime;
         return answer;
