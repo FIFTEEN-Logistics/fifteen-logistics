@@ -25,7 +25,7 @@ public class MessageRepositoryCustomImpl implements MessageRepositoryCustom {
     public Page<MessageGetResponse> findAllWithSearch(Pageable pageable, String search) {
         List<MessageGetResponse> result = queryFactory
                 .select(new QMessageGetResponse(
-                    message1.messsageId,
+                    message1.messageId,
                     message1.receiverId,
                     message1.message,
                     message1.sendTime

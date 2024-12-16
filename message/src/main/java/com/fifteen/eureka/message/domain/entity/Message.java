@@ -23,7 +23,7 @@ public class Message extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "message_id")
-    private UUID messsageId;
+    private UUID messageId;
 
     @Column(name = "receiver_id", nullable = false)
     private Long receiverId;
