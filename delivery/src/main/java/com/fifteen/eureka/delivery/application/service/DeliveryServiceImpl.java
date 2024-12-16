@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fifteen.eureka.delivery.application.dto.delivery.DeliveryCreateRequest;
+import com.fifteen.eureka.delivery.application.dto.delivery.DeliveryCreateResponse;
 import com.fifteen.eureka.delivery.application.dto.delivery.DeliveryDetailsResponse;
 import com.fifteen.eureka.delivery.application.dto.delivery.DeliveryRouteDetails;
 import com.fifteen.eureka.delivery.application.dto.delivery.DeliverySimpleResponse;
+import com.fifteen.eureka.delivery.application.dto.user.UserResponse;
 import com.fifteen.eureka.delivery.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.delivery.common.response.ResErrorCode;
 import com.fifteen.eureka.delivery.common.role.Role;
@@ -52,7 +54,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
 	@Override
 	@Transactional
-	public Delivery createDelivery(DeliveryCreateRequest deliveryCreateRequest) {
+	public DeliveryCreateResponse createDelivery(DeliveryCreateRequest deliveryCreateRequest) {
 		Hub startHub = hubRepository.findById(deliveryCreateRequest.getStartHubId())
 			.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "출발 허브를 찾을 수 없습니다."));
 		Hub endHub = hubRepository.findById(deliveryCreateRequest.getEndHubId())
@@ -64,7 +66,12 @@ public class DeliveryServiceImpl implements DeliveryService {
 
 		getDeliveryRouteList(startHub, endHub).forEach(delivery::addDeliveryRoute);
 
-		return deliveryRepository.save(delivery);
+		DeliveryCreateResponse deliveryCreateResponse = DeliveryCreateResponse.from(deliveryRepository.save(delivery));
+		UserResponse userResponse = userClient.getUser(vendorDeliveryManager.getId()).getData();
+		deliveryCreateResponse.setDeliveryUserName(userResponse.getUsername());
+		deliveryCreateResponse.setDeliveryUserEmail(userResponse.getEmail());
+
+		return deliveryCreateResponse;
 	}
 
 	@Override

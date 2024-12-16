@@ -39,14 +39,8 @@ public class DeliveryController {
 	private final DeliveryService deliveryService;
 
 	@PostMapping
-	public ResponseEntity<ApiResponse<?>> createDelivery(@RequestBody DeliveryCreateRequest deliveryCreateRequest) {
-		UUID deliveryId = deliveryService.createDelivery(deliveryCreateRequest).getId();
-		URI location = ServletUriComponentsBuilder
-			.fromCurrentRequest()
-			.path("/{id}")
-			.buildAndExpand(deliveryId)
-			.toUri();
-		return ResponseEntity.created(location).body(ApiResponse.OK(ResSuccessCode.CREATED));
+	public ApiResponse<?> createDelivery(@RequestBody DeliveryCreateRequest deliveryCreateRequest) {
+		return ApiResponse.OK(ResSuccessCode.SUCCESS, deliveryService.createDelivery(deliveryCreateRequest));
 
 	}
 
