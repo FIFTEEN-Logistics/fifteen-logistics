@@ -1,22 +1,24 @@
 package com.fifteen.eureka.user.application.service;
 
-import static com.fifteen.eureka.user.domain.model.QUser.user;
-
 import com.fifteen.eureka.common.auditor.AuditorAwareImpl;
 import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.common.role.Role;
 import com.fifteen.eureka.user.application.dto.ApprovalRequestDto;
+import com.fifteen.eureka.user.application.dto.DeliveryManagerCreateRequest;
 import com.fifteen.eureka.user.application.dto.SignupRequestDto;
 import com.fifteen.eureka.user.application.dto.UserGetListResponseDto;
 import com.fifteen.eureka.user.application.dto.UserGetResponseDto;
 import com.fifteen.eureka.user.application.dto.UserUpdateRequestDto;
 import com.fifteen.eureka.user.domain.model.ApprovalStatus;
+import com.fifteen.eureka.user.domain.model.QUser;
 import com.fifteen.eureka.user.domain.model.User;
 import com.fifteen.eureka.user.domain.repository.UserRepository;
+import com.fifteen.eureka.user.infrastructure.client.DeliveryManagerClient;
+import com.fifteen.eureka.user.infrastructure.config.FeignHeaderConfig;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
-import org.springframework.transaction.annotation.Transactional;
+import feign.FeignException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,18 +34,24 @@ public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
+  private final DeliveryManagerClient deliveryManagerClient;
 
   @Override
   @Transactional
   public void registerUser(SignupRequestDto requestDto) {
-    checkEmailInUse(requestDto.getEmail());
     checkUsernameInUse(requestDto.getUsername());
+    checkEmailInUse(requestDto.getEmail());
 
     Role userRole = requestDto.getRole();
 
     // ROLE_ADMIN_MASTER 가입 제한
     if (userRole == Role.ROLE_ADMIN_MASTER) {
       throw new IllegalArgumentException("ROLE_ADMIN_MASTER cannot register via signup.");
+    }
+
+    // ROLE_DELIVERY_HUB일 경우 허브 ID 검증
+    if (userRole == Role.ROLE_DELIVERY_HUB && requestDto.getHubId() == null) {
+      throw new CustomApiException(ResErrorCode.BAD_REQUEST, "Hub ID is required");
     }
 
     // 수동 Auditor 설정
@@ -58,9 +67,33 @@ public class UserServiceImpl implements UserService {
       );
 
       userRepository.save(user);
+
+      FeignHeaderConfig.setUsername(user.getUsername());
+
+      // ROLE_DELIVERY_HUB 또는 ROLE_DELIVERY_VENDOR일 경우 DeliveryManager 생성
+      if (userRole == Role.ROLE_DELIVERY_HUB || userRole == Role.ROLE_DELIVERY_VENDOR) {
+        DeliveryManagerCreateRequest.DeliveryManagerType deliveryManagerType =
+            userRole == Role.ROLE_DELIVERY_HUB
+                ? DeliveryManagerCreateRequest.DeliveryManagerType.HUB
+                : DeliveryManagerCreateRequest.DeliveryManagerType.VENDOR;
+
+        DeliveryManagerCreateRequest deliveryManagerRequestDto = DeliveryManagerCreateRequest.builder()
+            .userId(user.getId())
+            .hubId(userRole == Role.ROLE_DELIVERY_HUB ? requestDto.getHubId() : null)
+            .deliveryManagerType(deliveryManagerType)
+            .build();
+
+        try {
+          deliveryManagerClient.createDeliveryManager(deliveryManagerRequestDto);
+        } catch (FeignException e) {
+          throw new CustomApiException(ResErrorCode.API_CALL_FAILED, "Failed to create DeliveryManager: "+ e.getMessage());
+        }
+      }
+
     } finally {
       // Thread-local 값 초기화
       AuditorAwareImpl.clearManualAuditor();
+      FeignHeaderConfig.clearContext();
     }
   }
 
@@ -87,7 +120,6 @@ public class UserServiceImpl implements UserService {
         !user.getEmail().equals(requestDto.getEmail())) {
       checkEmailInUse(requestDto.getEmail());
     }
-
 
     // 동일 값 검증
     List<String> unchangedFields = new ArrayList<>();
@@ -127,9 +159,10 @@ public class UserServiceImpl implements UserService {
   public UserGetListResponseDto findAllUsers(List<Long> idList, Predicate predicate,
       Pageable pageable) {
 
+    QUser qUser = QUser.user;
     BooleanBuilder booleanBuilder = new BooleanBuilder(predicate);
     if (idList != null && !idList.isEmpty()) {
-      booleanBuilder.and(user.id.in(idList));
+      booleanBuilder.and(qUser.id.in(idList));
     }
     Page<User> userEntityPage = userRepository.findAll(booleanBuilder, pageable);
     return UserGetListResponseDto.of(userEntityPage);
