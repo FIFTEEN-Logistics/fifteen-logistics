@@ -13,10 +13,10 @@ import com.fifteen.eureka.user.application.dto.UserGetResponseDto;
 import com.fifteen.eureka.user.application.dto.UserUpdateRequestDto;
 import com.fifteen.eureka.user.domain.model.ApprovalStatus;
 import com.fifteen.eureka.user.domain.model.User;
-import com.fifteen.eureka.user.infrastructure.repository.UserRepository;
+import com.fifteen.eureka.user.domain.repository.UserRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @org.springframework.transaction.annotation.Transactional
+  @Transactional
   public void updateApprovalStatus(Long userId, ApprovalRequestDto requestDto) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "User not found."));
@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @org.springframework.transaction.annotation.Transactional
+  @Transactional
   public void updateUser(Long userId, UserUpdateRequestDto requestDto) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "User not found"));
@@ -123,7 +123,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @org.springframework.transaction.annotation.Transactional(readOnly = true)
+  @Transactional(readOnly = true)
   public UserGetListResponseDto findAllUsers(List<Long> idList, Predicate predicate,
       Pageable pageable) {
 
@@ -137,7 +137,7 @@ public class UserServiceImpl implements UserService {
 
 
   @Override
-  @org.springframework.transaction.annotation.Transactional(readOnly = true)
+  @Transactional(readOnly = true)
   public UserGetResponseDto findUserById(Long userId, String currentUsername, Role role) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "User not found."));
@@ -158,7 +158,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  @org.springframework.transaction.annotation.Transactional
+  @Transactional
   public void deleteUser(Long userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "User not found."));
