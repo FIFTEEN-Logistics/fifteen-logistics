@@ -22,5 +22,25 @@
         <module name="vpo.main" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="delivery" target="17" />
+      <module name="delivery.main" target="17" />
+      <module name="delivery.test" target="17" />
+      <module name="gateway" target="17" />
+      <module name="gateway.main" target="17" />
+      <module name="gateway.test" target="17" />
+      <module name="message" target="17" />
+      <module name="message.main" target="17" />
+      <module name="message.test" target="17" />
+      <module name="server" target="17" />
+      <module name="server.main" target="17" />
+      <module name="server.test" target="17" />
+      <module name="user" target="17" />
+      <module name="user.main" target="17" />
+      <module name="user.test" target="17" />
+      <module name="vpo" target="17" />
+      <module name="vpo.main" target="17" />
+      <module name="vpo.test" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>

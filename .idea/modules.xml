@@ -2,11 +2,24 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/fifteen-logistics.iml" filepath="$PROJECT_DIR$/.idea/fifteen-logistics.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/delivery.iml" filepath="$PROJECT_DIR$/.idea/modules/delivery.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/delivery.main.iml" filepath="$PROJECT_DIR$/.idea/modules/delivery.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/delivery.test.iml" filepath="$PROJECT_DIR$/.idea/modules/delivery.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/gateway.iml" filepath="$PROJECT_DIR$/.idea/modules/gateway.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/gateway.main.iml" filepath="$PROJECT_DIR$/.idea/modules/gateway.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/gateway.test.iml" filepath="$PROJECT_DIR$/.idea/modules/gateway.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/message.iml" filepath="$PROJECT_DIR$/.idea/modules/message.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/message.main.iml" filepath="$PROJECT_DIR$/.idea/modules/message.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/message.test.iml" filepath="$PROJECT_DIR$/.idea/modules/message.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server.iml" filepath="$PROJECT_DIR$/.idea/modules/server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server.main.iml" filepath="$PROJECT_DIR$/.idea/modules/server.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server.test.iml" filepath="$PROJECT_DIR$/.idea/modules/server.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/user.iml" filepath="$PROJECT_DIR$/.idea/modules/user.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/user.main.iml" filepath="$PROJECT_DIR$/.idea/modules/user.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/user.test.iml" filepath="$PROJECT_DIR$/.idea/modules/user.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/vpo.iml" filepath="$PROJECT_DIR$/.idea/modules/vpo.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/vpo.main.iml" filepath="$PROJECT_DIR$/.idea/modules/vpo.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/vpo.test.iml" filepath="$PROJECT_DIR$/.idea/modules/vpo.test.iml" />
     </modules>
   </component>
 </project>
