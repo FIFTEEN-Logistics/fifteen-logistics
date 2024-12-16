@@ -10,8 +10,8 @@ import com.fifteen.eureka.vpo.presentation.request.vendor.CreateVendorRequest;
 import com.fifteen.eureka.vpo.presentation.request.vendor.UpdateVendorRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -23,14 +23,17 @@ public class VendorController {
 
     private final VendorService vendorService;
 
-    @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_DELIVERY_HUB"})
+    @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_ADMIN_HUB"})
     @PostMapping
-    public ApiResponse<?> createVendor(@Valid @RequestBody CreateVendorRequest request) {
-        return ApiResponse.OK(ResSuccessCode.CREATED, vendorService.createVendor(request.toDto()));
+    public ApiResponse<?> createVendor(
+            @Valid @RequestBody CreateVendorRequest request,
+            @RequestHeader("X-UserId") Long currentUserId,
+            @RequestHeader("X-Role") String currentRole ) {
+        return ApiResponse.OK(ResSuccessCode.CREATED, vendorService.createVendor(request.toDto(), currentUserId, currentRole));
     }
 
     @GetMapping
-    public ApiResponse<Page<VendorResponse>> getVendors(
+    public ApiResponse<PagedModel<VendorResponse>> getVendors(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -45,19 +48,24 @@ public class VendorController {
         return ApiResponse.OK(ResSuccessCode.SUCCESS, vendorService.getVendor(vendorId));
     }
 
-    @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_DELIVERY_HUB", "ROLE_ADMIN_VENDOR"})
+    @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_ADMIN_HUB", "ROLE_ADMIN_VENDOR"})
     @PutMapping("/{vendorId}")
     public ApiResponse<?> updateVendor(
+            @RequestHeader("X-UserId") Long currentUserId,
+            @RequestHeader("X-Role") String currentRole,
             @PathVariable UUID vendorId,
             @Valid @RequestBody UpdateVendorRequest request) {
 
-        return ApiResponse.OK(ResSuccessCode.UPDATED, vendorService.updateVendor(vendorId, request.toDto()));
+        return ApiResponse.OK(ResSuccessCode.UPDATED, vendorService.updateVendor(vendorId, request.toDto(), currentUserId, currentRole));
     }
 
-    @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_DELIVERY_HUB"})
+    @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_ADMIN_HUB"})
     @DeleteMapping("/{vendorId}")
-    public ApiResponse<?> deleteVendor(@PathVariable UUID vendorId) {
-        return ApiResponse.OK(ResSuccessCode.DELETED, vendorService.deleteVendor(vendorId));
+    public ApiResponse<?> deleteVendor(
+            @PathVariable UUID vendorId,
+            @RequestHeader("X-UserId") Long currentUserId,
+            @RequestHeader("X-Role") String currentRole) {
+        return ApiResponse.OK(ResSuccessCode.DELETED, vendorService.deleteVendor(vendorId, currentUserId, currentRole));
     }
 
 }
