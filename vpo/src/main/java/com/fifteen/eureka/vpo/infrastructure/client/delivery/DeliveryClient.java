@@ -1,4 +1,4 @@
-package com.fifteen.eureka.vpo.infrastructure.client;
+package com.fifteen.eureka.vpo.infrastructure.client.delivery;
 
 import com.fifteen.eureka.common.response.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;

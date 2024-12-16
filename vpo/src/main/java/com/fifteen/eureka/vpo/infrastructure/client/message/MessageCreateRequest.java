@@ -1,4 +1,4 @@
-package com.fifteen.eureka.vpo.infrastructure.client;
+package com.fifteen.eureka.vpo.infrastructure.client.message;
 
 import lombok.Builder;
 import lombok.Getter;

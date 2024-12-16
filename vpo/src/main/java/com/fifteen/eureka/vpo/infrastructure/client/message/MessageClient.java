@@ -1,4 +1,4 @@
-package com.fifteen.eureka.vpo.infrastructure.client;
+package com.fifteen.eureka.vpo.infrastructure.client.message;
 
 import com.fifteen.eureka.common.response.ApiResponse;
 import jakarta.validation.Valid;
