@@ -1,4 +1,4 @@
-package com.fifteen.eureka.user.application.dto;
+package com.fifteen.eureka.user.application.dto.auth;
 
 import lombok.Getter;
 import lombok.Setter;

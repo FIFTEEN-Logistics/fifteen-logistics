@@ -1,4 +1,4 @@
-package com.fifteen.eureka.user.application.dto;
+package com.fifteen.eureka.user.application.dto.auth;
 
 import com.fifteen.eureka.user.domain.model.ApprovalStatus;
 import jakarta.validation.constraints.NotNull;
