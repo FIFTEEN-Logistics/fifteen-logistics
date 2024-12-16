@@ -18,7 +18,6 @@ public class OrderResponse {
     private UUID receiverId;
     private UUID supplierId;
     private String orderRequest;
-    private boolean isDeleted;
     private boolean isCanceled;
 
     private List<OrderDetailResponse> orderDetails;
@@ -32,7 +31,6 @@ public class OrderResponse {
                 .receiverId(order.getReceiver().getVendorId())
                 .supplierId(order.getSupplier().getVendorId())
                 .orderRequest(order.getOrderRequest())
-                .isDeleted(order.isDeleted())
                 .isCanceled(order.isCanceled())
                 .orderDetails(order.getOrderDetails().stream().map(OrderDetailResponse::of).toList())
                 .build();

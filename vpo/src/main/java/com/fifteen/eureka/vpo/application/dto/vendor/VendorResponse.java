@@ -17,7 +17,6 @@ public class VendorResponse {
     private String vendorName;
     private String vendorAddress;
     private VendorType vendorType;
-    private boolean isDeleted;
 
     public static VendorResponse of(Vendor vendor) {
         return VendorResponse.builder()
@@ -27,7 +26,6 @@ public class VendorResponse {
                 .vendorName(vendor.getVendorName())
                 .vendorAddress(vendor.getVendorAddress())
                 .vendorType(vendor.getVendorType())
-                .isDeleted(vendor.isDeleted())
                 .build();
     }
 

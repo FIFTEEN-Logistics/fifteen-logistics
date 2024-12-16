@@ -16,7 +16,6 @@ public class ProductResponse {
     private String productName;
     private int productPrice;
     private int quantity;
-    private boolean isDeleted;
 
     public static ProductResponse of(Product product) {
         return ProductResponse.builder()
@@ -26,7 +25,6 @@ public class ProductResponse {
                 .productName(product.getProductName())
                 .productPrice(product.getProductPrice())
                 .quantity(product.getQuantity())
-                .isDeleted(product.isDeleted())
                 .build();
     }
 }
