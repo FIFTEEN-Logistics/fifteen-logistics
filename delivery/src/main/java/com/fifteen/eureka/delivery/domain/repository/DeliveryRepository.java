@@ -8,9 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.fifteen.eureka.delivery.domain.model.Delivery;
-import com.fifteen.eureka.delivery.infrastructure.repository.DeliveryRepositoryCustom;
 
-public interface DeliveryRepository extends JpaRepository<Delivery, UUID>, DeliveryRepositoryCustom {
+public interface DeliveryRepository extends JpaRepository<Delivery, UUID> {
 
 	@Query("select d from Delivery d join fetch d.deliveryRoutes dr where d.id = :deliveryId order by dr.routeSequence asc")
 	Optional<Delivery> findByIdWithDeliveryRoutes(@Param("deliveryId") UUID deliveryId);

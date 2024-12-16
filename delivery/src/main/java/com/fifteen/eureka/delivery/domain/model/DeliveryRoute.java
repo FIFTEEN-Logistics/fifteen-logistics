@@ -84,4 +84,8 @@ public class DeliveryRoute extends BaseEntity {
 		this.actualDuration = actualDuration;
 		this.deliveryStatus = deliveryStatus;
 	}
+
+	public void updateDeliveryStatus(DeliveryStatus deliveryStatus) {
+		this.deliveryStatus = deliveryStatus;
+	}
 }

@@ -18,6 +18,7 @@ import com.fifteen.eureka.delivery.application.dto.delivery.DeliveryRouteDetails
 import com.fifteen.eureka.delivery.application.dto.delivery.DeliverySimpleResponse;
 import com.fifteen.eureka.delivery.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.delivery.common.response.ResErrorCode;
+import com.fifteen.eureka.delivery.common.role.Role;
 import com.fifteen.eureka.delivery.domain.model.Delivery;
 import com.fifteen.eureka.delivery.domain.model.DeliveryManager;
 import com.fifteen.eureka.delivery.domain.model.DeliveryManagerType;
@@ -27,6 +28,7 @@ import com.fifteen.eureka.delivery.domain.model.Hub;
 import com.fifteen.eureka.delivery.domain.model.HubRouteGuide;
 import com.fifteen.eureka.delivery.domain.repository.DeliveryManagerRepository;
 import com.fifteen.eureka.delivery.domain.repository.DeliveryRepository;
+import com.fifteen.eureka.delivery.domain.repository.DeliveryRouteRepository;
 import com.fifteen.eureka.delivery.domain.repository.HubRepository;
 import com.fifteen.eureka.delivery.domain.repository.HubRouteGuideRepository;
 import com.fifteen.eureka.delivery.infrastructure.client.UserClient;
@@ -39,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 public class DeliveryServiceImpl implements DeliveryService {
 
 	private final DeliveryRepository deliveryRepository;
+	private final DeliveryRouteRepository deliveryRouteRepository;
 	private final HubRepository hubRepository;
 	private final HubRouteGuideRepository hubRouteGuideRepository;
 	private final DeliveryManagerRepository deliveryManagerRepository;
@@ -78,7 +81,9 @@ public class DeliveryServiceImpl implements DeliveryService {
 		Delivery delivery = deliveryRepository.findByIdWithDeliveryRoutes(deliveryId)
 			.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "배송 정보를 찾을 수 없습니다."));
 
-		String vendorDeliveryManagerName = userClient.getUser(delivery.getVendorDeliveryManager().getId()).getData().getUsername();
+		String vendorDeliveryManagerName = userClient.getUser(delivery.getVendorDeliveryManager().getId())
+			.getData()
+			.getUsername();
 
 		List<DeliveryRouteDetails> deliveryRouteDetailsList = delivery.getDeliveryRoutes().stream()
 			.map((deliveryRoute -> {
@@ -96,6 +101,22 @@ public class DeliveryServiceImpl implements DeliveryService {
 		deliveryDetailsResponse.setDeliveryRoutes(deliveryRouteDetailsList);
 
 		return deliveryDetailsResponse;
+	}
+
+	@Override
+	@Transactional
+	public void updateDeliveryStatus(UUID deliveryRouteId, Role role, long userId, DeliveryStatus deliveryStatus) {
+		DeliveryRoute deliveryRoute = deliveryRouteRepository.findById(deliveryRouteId)
+			.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "배송 정보를 찾을 수 없습니다."));
+		if (role == Role.ROLE_DELIVERY_HUB && deliveryRoute.getDeliveryManager().getId() != userId) {
+			throw new CustomApiException(ResErrorCode.FORBIDDEN, "배송 정보를 변경할 권한이 없습니다.");
+		}
+		if (role == Role.ROLE_ADMIN_HUB && deliveryRoute.getDepartureHub().getHubManagerId() != userId
+			&& deliveryRoute.getArrivalHub().getHubManagerId() != userId) {
+			throw new CustomApiException(ResErrorCode.FORBIDDEN, "배송 정보를 변경할 권한이 없습니다.");
+		}
+		deliveryRoute.updateDeliveryStatus(deliveryStatus);
+		deliveryRoute.getDelivery().updateDeliveryStatus(deliveryStatus);
 	}
 
 	private List<DeliveryRoute> getDeliveryRouteList(Hub startHub, Hub endHub) {

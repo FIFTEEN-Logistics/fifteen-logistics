@@ -8,7 +8,9 @@ import org.springframework.data.domain.Pageable;
 import com.fifteen.eureka.delivery.application.dto.delivery.DeliveryCreateRequest;
 import com.fifteen.eureka.delivery.application.dto.delivery.DeliveryDetailsResponse;
 import com.fifteen.eureka.delivery.application.dto.delivery.DeliverySimpleResponse;
+import com.fifteen.eureka.delivery.common.role.Role;
 import com.fifteen.eureka.delivery.domain.model.Delivery;
+import com.fifteen.eureka.delivery.domain.model.DeliveryStatus;
 
 public interface DeliveryService {
 	Delivery createDelivery(DeliveryCreateRequest deliveryCreateRequest);
@@ -16,4 +18,6 @@ public interface DeliveryService {
 	DeliveryDetailsResponse getDelivery(UUID deliveryId);
 
 	Page<DeliverySimpleResponse> getDeliveries(Pageable pageable);
+
+	void updateDeliveryStatus(UUID deliveryRouteId, Role role, long userId, DeliveryStatus deliveryStatus);
 }
