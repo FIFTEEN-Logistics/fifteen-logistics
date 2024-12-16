@@ -11,6 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface MessageClient {
 
     @PostMapping("/api/messages")
-    public ResponseEntity<?> createMessage(
+    public ApiResponse<?> createMessage(
             @Valid @RequestBody MessageCreateRequest messageCreateRequest);
 }

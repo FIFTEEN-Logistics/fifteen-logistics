@@ -12,11 +12,12 @@ import com.fifteen.eureka.vpo.infrastructure.client.hub.HubDetailsResponse;
 import com.fifteen.eureka.vpo.infrastructure.client.user.UserClient;
 import com.fifteen.eureka.vpo.infrastructure.repository.VendorQueryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,19 +27,21 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class VendorService {
 
     private final VendorRepository vendorRepository;
     private final VendorQueryRepository vendorQueryRepository;
     private final HubClient hubClient;
     private final UserClient userClient;
+    @Value("${UserCheck.key}")
+    private String userCheckKey;
 
     @Transactional
     public VendorResponse createVendor(CreateVendorDto request, Long currentUserId, String currentRole) {
 
-        HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
-                hubClient.getHub(request.getHubId()).getBody())
-                    .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
+        HubDetailsResponse hubDetailsResponse = Optional.ofNullable(hubClient.getHub(request.getHubId()).getData())
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
         if(currentRole.equals("ROLE_ADMIN_HUB")) {
             if(!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
@@ -46,9 +49,7 @@ public class VendorService {
             }
         }
 
-
-//        UserGetResponseDto userGetResponseDto = Optional.ofNullable(
-//                (UserGetResponseDto) userClient.findUserById(currentUserId,"username","ROLE_ADMIN_MASTER").getBody().getData()
+//        UserGetResponseDto userGetResponseDto = Optional.ofNullable(userClient.findUserById(currentUserId,"userCheck",userCheckKey).getBody().getData())
 //                .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
 //
 //        if (!userGetResponseDto.getRole().equals(UserGetResponseDto.Role.ROLE_ADMIN_VENDOR)) {
@@ -88,48 +89,41 @@ public class VendorService {
     @Transactional
     public VendorResponse updateVendor(UUID vendorId, UpdateVendorDto request, Long currentUserId, String currentRole) {
 
-        //role=hub admin -> hub getdata get userId != userid -> 자신의 허브만 업체 수정 가능
-        //vendor.getuserId != userid -> 자신의 업체만 수정 가능
         Vendor vendor = vendorRepository.findById(vendorId)
-                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 업체를 찾을 수 없습니다."));
 
         // 허브담당자
         if (currentRole.equals("ROLE_ADMIN_HUB")) {
-
-            HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
-                            hubClient.getHub(vendor.getHubId()).getBody())
-                    .orElseThrow(() -> new CustomApiException(ResErrorCode.BAD_REQUEST));
-
-            if (!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
-                throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
+            if (!vendor.getHubManagerId().equals(currentUserId)) {
+                throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "해당 허브 담당자가 아닌 경우 업체 수정이 불가합니다.");
             }
         }
 
         // 업체담당자
         if (currentRole.equals("ROLE_ADMIN_VENDOR")) {
             if (!vendor.getUserId().equals(currentUserId)) {
-                throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
+                throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "해당 업체 담당자가 아닌 경우 업체 수정이 불가합니다.");
             }
         }
 
-        // 수정하려는 hubId 존재하는지 검사
+        // hubId 변경 되었을 경우
         if (!vendor.getHubId().equals(request.getHubId())) {
-            HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
-                            hubClient.getHub(request.getHubId()).getBody())
+
+            HubDetailsResponse hubDetailsResponse = Optional.ofNullable(hubClient.getHub(request.getHubId()).getData())
                     .orElseThrow(() -> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
             vendor.hunInfoUpdate(hubDetailsResponse.getId(), hubDetailsResponse.getHubManagerId());
         }
 
-
-        if (!vendor.getUserId().equals(request.getUserId())) {
-            if (!userClient.findUserById(
-                    request.getUserId(),
-                    "test",
-                    "ROLE_ADMIN_MASTER").getStatusCode().equals(HttpStatusCode.valueOf(200))) {
-                throw new CustomApiException(ResErrorCode.NOT_FOUND, "해당 유저를 찾을 수 없습니다.");
-            }
-        }
+//        // vendor manager 변경되었을 경우
+//        if (!vendor.getUserId().equals(request.getUserId())) {
+//            UserGetResponseDto userGetResponseDto = Optional.ofNullable(userClient.findUserById(currentUserId,"userCheck",userCheckKey).getBody().getData())
+//                .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
+//
+//            if (!userGetResponseDto.getRole().equals(UserGetResponseDto.Role.ROLE_ADMIN_VENDOR)) {
+//                throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
+//            }
+//        }
 
         vendor.update(
                 request.getUserId(),
@@ -144,20 +138,13 @@ public class VendorService {
     public VendorResponse deleteVendor(UUID vendorId, Long currentUserId, String currentRole) {
 
         Vendor vendor = vendorRepository.findById(vendorId)
-                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 업체를 찾을 수 없습니다."));
 
-        // 허브담당자
-        if(currentRole.equals("ROLE_ADMIN_HUB")) {
-
-            HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
-                            hubClient.getHub(vendor.getHubId()).getBody())
-                    .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
-
-            if(!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
+        if (currentRole.equals("ROLE_ADMIN_HUB")) {
+            if (!vendor.getHubManagerId().equals(currentUserId)) {
                 throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
             }
         }
-
 
         vendorRepository.delete(vendor);
 

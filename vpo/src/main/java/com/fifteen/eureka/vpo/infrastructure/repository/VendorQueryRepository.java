@@ -2,6 +2,7 @@ package com.fifteen.eureka.vpo.infrastructure.repository;
 
 import com.fifteen.eureka.vpo.domain.model.QVendor;
 import com.fifteen.eureka.vpo.domain.model.Vendor;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Repository
@@ -21,15 +23,30 @@ public class VendorQueryRepository {
 
         QVendor vendor = QVendor.vendor;
 
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (keyword != null && !keyword.isEmpty()) {
+            builder.and(vendor.vendorName.containsIgnoreCase(keyword)
+                    .or(vendor.vendorAddress.containsIgnoreCase(keyword)));
+        }
+
         List<Vendor> vendors = jpaQueryFactory
-                .selectFrom(vendor).distinct()
-                .where(
-                        vendor.vendorName.containsIgnoreCase(keyword)
-                                .or(vendor.vendorAddress.containsIgnoreCase(keyword))
-                )
+                .selectFrom(vendor)
+                .where(builder)
+                .distinct()
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
-        return new PageImpl<>(vendors, pageable, vendors.size());
+        long total = Optional.ofNullable(
+                jpaQueryFactory
+                        .select(vendor.count())
+                        .from(vendor)
+                        .where(builder)
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(vendors, pageable, total);
 
     }
 }
