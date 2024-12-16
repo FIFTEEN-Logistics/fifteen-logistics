@@ -8,8 +8,10 @@ import java.util.UUID;
 
 @Builder
 @Getter
-public class CreateDeliveryDto {
+public class DeliveryCreateRequest {
     private UUID orderId;
+    private UUID startHubId;
+    private UUID endHubId;
     private String deliveryAddress;
     private String recipient;
     private String recipientSlackId;

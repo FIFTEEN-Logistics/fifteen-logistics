@@ -36,14 +36,14 @@ public class VendorService {
     @Transactional
     public VendorResponse createVendor(CreateVendorDto request, Long currentUserId, String currentRole) {
 
-            HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
-                    hubClient.getHub(request.getHubId()).getData())
-                        .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
+        HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
+                hubClient.getHub(request.getHubId()).getData())
+                    .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
-            if(currentRole.equals("ROLE_ADMIN_HUB")) {
-                if(!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
-                    throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
-                }
+        if(currentRole.equals("ROLE_ADMIN_HUB")) {
+            if(!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
+                throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
+            }
         }
 
 

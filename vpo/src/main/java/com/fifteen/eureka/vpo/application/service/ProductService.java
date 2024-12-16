@@ -98,7 +98,7 @@ public class ProductService {
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
         if(currentRole.equals("ROLE_ADMIN_HUB")) {
-            if(product.getVendor().getHubManagerId().equals(currentUserId)) {
+            if(!product.getVendor().getHubManagerId().equals(currentUserId)) {
                 throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
             }
         }

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "message-service")
 public interface MessageClient {
 
-    @PostMapping()
+    @PostMapping("/api/messages")
     public ApiResponse<?> createMessage(
             @Valid @RequestBody MessageCreateRequest messageCreateRequest);
 }

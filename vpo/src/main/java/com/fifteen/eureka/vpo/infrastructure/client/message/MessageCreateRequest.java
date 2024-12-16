@@ -1,5 +1,6 @@
 package com.fifteen.eureka.vpo.infrastructure.client.message;
 
+import com.fifteen.eureka.vpo.domain.model.OrderDetail;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -33,8 +34,17 @@ public class MessageCreateRequest {
     private String deliveryUserEmail;
     //=================ai 만들내용 ===================
 
+    @Getter
+    @Builder
     public static class ProductDetail {
         String productName;
         int quantity;
+
+        public static ProductDetail of(OrderDetail orderDetail) {
+            return ProductDetail.builder()
+                    .productName(orderDetail.getProduct().getProductName())
+                    .quantity(orderDetail.getQuantity())
+                    .build();
+        }
     }
 }

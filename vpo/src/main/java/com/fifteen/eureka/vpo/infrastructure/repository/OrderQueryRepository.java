@@ -4,9 +4,9 @@ import com.fifteen.eureka.vpo.domain.model.Order;
 import com.fifteen.eureka.vpo.domain.model.QOrder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,18 +16,22 @@ import java.util.List;
 public class OrderQueryRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
-    public PagedModel<Order> findByKeyword(String keyword, Pageable pageable) {
+    public Page<Order> findByKeyword(String keyword, Pageable pageable, Long currentUserId, boolean isHubManager) {
 
         QOrder order = QOrder.order;
 
         List<Order> orders = jpaQueryFactory
                 .selectFrom(order).distinct()
                 .where(
-                        order.orderRequest.containsIgnoreCase(keyword)
-                                .or(order.orderNumber.containsIgnoreCase(keyword))
+                        isHubManager ? order.supplier.hubManagerId.eq(currentUserId).or(order.receiver.hubManagerId.eq(currentUserId))
+                                        .and(order.orderRequest.containsIgnoreCase(keyword)
+                                        .or(order.orderNumber.containsIgnoreCase(keyword)))
+                                    : order.userId.eq(currentUserId)
+                                        .and(order.orderRequest.containsIgnoreCase(keyword)
+                                        .or(order.orderNumber.containsIgnoreCase(keyword)))
                 )
                 .fetch();
 
-        return new PagedModel<>(new PageImpl<>(orders, pageable, orders.size()));
+        return new PageImpl<>(orders, pageable, orders.size());
     }
 }

@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface DeliveryClient {
 
     @PostMapping("/api/deliveries")
-    public ResponseEntity<ApiResponse<?>> createDelivery(@RequestBody CreateDeliveryDto createDeliveryDto);
+    public ApiResponse<?> createDelivery(@RequestBody DeliveryCreateRequest deliveryCreateRequest);
 
     @GetMapping("/api/deliveries/{deliveryId}")
     public ApiResponse<?> getDelivery(@PathVariable UUID deliveryId);

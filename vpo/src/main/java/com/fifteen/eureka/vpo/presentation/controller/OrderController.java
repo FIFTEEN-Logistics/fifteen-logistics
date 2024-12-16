@@ -24,12 +24,16 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ApiResponse<?> createOrder(@Valid @RequestBody CreateOrderRequest request) {
+    public ApiResponse<?> createOrder(
+            @Valid @RequestBody CreateOrderRequest request,
+            @RequestHeader("X-UserId") Long currentUserId,
+            @RequestHeader("X-Role") String currentRole) {
 
         return ApiResponse.OK(ResSuccessCode.CREATED, orderService.createOrder(
                 request.toDto(),
                 request.getOrderDetails().stream().map(CreateOrderRequest.CreateOrderDetailRequest::toDto).toList(),
-                request.getDelivery().toDto()
+                request.getDelivery().toDto(),
+                currentUserId
         ));
     }
 
@@ -39,38 +43,52 @@ public class OrderController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "true") boolean isAsc,
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @RequestHeader("X-UserId") Long currentUserId,
+            @RequestHeader("X-Role") String currentRole) {
         Pageable pageable = PagingUtil.createPageable(page, size, isAsc, sortBy);
-        return ApiResponse.OK(ResSuccessCode.SUCCESS, orderService.getOrders(pageable, keyword));
+        return ApiResponse.OK(ResSuccessCode.SUCCESS, orderService.getOrders(pageable, keyword, currentUserId, currentRole));
     }
 
     @GetMapping("/{orderId}")
-    public ApiResponse<?> getOrder(@PathVariable UUID orderId) {
-        return ApiResponse.OK(ResSuccessCode.SUCCESS, orderService.getOrder(orderId));
+    public ApiResponse<?> getOrder(
+            @PathVariable UUID orderId,
+            @RequestHeader("X-UserId") Long currentUserId,
+            @RequestHeader("X-Role") String currentRole) {
+        return ApiResponse.OK(ResSuccessCode.SUCCESS, orderService.getOrder(orderId, currentUserId, currentRole));
     }
 
     @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_DELIVERY_HUB"})
     @PutMapping("/{orderId}")
     public ApiResponse<?> updateOrder(
             @PathVariable UUID orderId,
-            @Valid @RequestBody UpdateOrderRequest request) {
+            @Valid @RequestBody UpdateOrderRequest request,
+            @RequestHeader("X-UserId") Long currentUserId,
+            @RequestHeader("X-Role") String currentRole) {
 
         return ApiResponse.OK(ResSuccessCode.UPDATED, orderService.updateOrder(
                 orderId,
                 request.toDto(),
-                request.getOrderDetails().stream().map(UpdateOrderRequest.OrderDetail::toDto).toList()
+                currentUserId,
+                currentRole
         ));
     }
 
     @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_DELIVERY_HUB"})
     @PutMapping("/{orderId}/cancel")
-    public ApiResponse<?> cancelOrder(@PathVariable UUID orderId) {
-        return ApiResponse.OK(ResSuccessCode.UPDATED, orderService.cancelOrder(orderId));
+    public ApiResponse<?> cancelOrder(
+            @PathVariable UUID orderId,
+            @RequestHeader("X-UserId") Long currentUserId,
+            @RequestHeader("X-Role") String currentRole) {
+        return ApiResponse.OK(ResSuccessCode.UPDATED, orderService.cancelOrder(orderId, currentUserId, currentRole));
     }
 
     @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_DELIVERY_HUB"})
     @DeleteMapping("/{orderId}")
-    public ApiResponse<?> deleteOrder(@PathVariable UUID orderId) {
-        return ApiResponse.OK(ResSuccessCode.DELETED, orderService.deleteOrder(orderId));
+    public ApiResponse<?> deleteOrder(
+            @PathVariable UUID orderId,
+            @RequestHeader("X-UserId") Long currentUserId,
+            @RequestHeader("X-Role") String currentRole) {
+        return ApiResponse.OK(ResSuccessCode.DELETED, orderService.deleteOrder(orderId, currentUserId, currentRole));
     }
 }
