@@ -1,5 +1,6 @@
 package com.fifteen.eureka.user.infrastructure.repository;
 
+import com.fifteen.eureka.user.domain.repository.AuthRepository;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,14 +9,14 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class RedisTokenRepository {
+public class RedisTokenRepository implements AuthRepository {
 
   private final RedisTemplate<String, String> redisTemplate;
 
   @Value("${jwt.refresh.expiration}")
   private long refreshTokenValidity;
 
-  // 리프레시 토큰 저장
+  @Override
   public boolean saveRefreshToken(Long userId, String refreshToken) {
     long remainingExpiration = refreshTokenValidity * 1000L;
 
@@ -32,7 +33,7 @@ public class RedisTokenRepository {
     return redisTemplate.hasKey(refreshKey) && redisTemplate.hasKey(userKey);
   }
 
-  // 리프레시 토큰 삭제
+  @Override
   public boolean deleteRefreshToken(Long userId) {
     String userKey = getKey("userId", userId.toString());
     String refreshToken = redisTemplate.opsForValue().get(userKey);
@@ -61,7 +62,7 @@ public class RedisTokenRepository {
     return redisTemplate.hasKey(blacklistKey);
   }
 
-  // 액세스 토큰 블랙리스트 검증
+  @Override
   public boolean isBlacklisted(String accessToken) {
     return redisTemplate.hasKey("blacklist:" + accessToken);
   }

@@ -7,11 +7,11 @@ import com.fifteen.eureka.user.application.dto.LoginRequestDto;
 import com.fifteen.eureka.user.application.dto.LoginResponseDto;
 import com.fifteen.eureka.user.domain.model.ApprovalStatus;
 import com.fifteen.eureka.user.domain.model.User;
+import com.fifteen.eureka.user.domain.repository.AuthRepository;
+import com.fifteen.eureka.user.domain.repository.UserRepository;
 import com.fifteen.eureka.user.infrastructure.jwt.JwtTokenFactory;
 import com.fifteen.eureka.user.infrastructure.jwt.JwtTokenParser;
 import com.fifteen.eureka.user.infrastructure.jwt.JwtTokenValidator;
-import com.fifteen.eureka.user.infrastructure.repository.RedisTokenRepository;
-import com.fifteen.eureka.user.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ public class AuthServiceImpl implements AuthService {
   private final JwtTokenFactory jwtTokenFactory;
   private final JwtTokenParser jwtTokenParser;
   private final JwtTokenValidator jwtTokenValidator;
-  private final RedisTokenRepository redisTokenRepository;
+  private final AuthRepository authRepository;
 
   @Override
   @Transactional
@@ -49,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
     String refreshToken = jwtTokenFactory.createRefreshToken(user.getId());
 
     // 리프레시 토큰 저장
-    boolean isSaved = redisTokenRepository.saveRefreshToken(user.getId(), refreshToken);
+    boolean isSaved = authRepository.saveRefreshToken(user.getId(), refreshToken);
     if (!isSaved) {
       throw new CustomApiException(ResErrorCode.INTERNAL_SERVER_ERROR, "Failed to store refresh token in Redis");
     }
@@ -63,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
     Long userId = jwtTokenParser.getUserId(accessToken);
 
     // 리프레시 토큰 삭제
-    boolean tokenDeleted = redisTokenRepository.deleteRefreshToken(userId);
+    boolean tokenDeleted = authRepository.deleteRefreshToken(userId);
     if (!tokenDeleted) {
       throw new CustomApiException(ResErrorCode.BAD_REQUEST, "User is already logged out.");
     }
@@ -75,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // 액세스 토큰 블랙리스트 추가
-    boolean isBlacklisted = redisTokenRepository.addToBlacklist(accessToken, remainingExpiration);
+    boolean isBlacklisted = authRepository.addToBlacklist(accessToken, remainingExpiration);
     if (!isBlacklisted) {
       throw new CustomApiException(ResErrorCode.INTERNAL_SERVER_ERROR, "Failed to add access token to blacklist");
     }
@@ -100,7 +100,7 @@ public class AuthServiceImpl implements AuthService {
   @Transactional
   public AuthInfoResponseDto validateToken(String accessToken) {
     // 블랙리스트 확인
-    if (redisTokenRepository.isBlacklisted(accessToken)) {
+    if (authRepository.isBlacklisted(accessToken)) {
       throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "Access token is blacklisted");
     }
     // 액세스 토큰 유효성 검증
