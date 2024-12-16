@@ -21,7 +21,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
-public class ProductController {
+public class ProductController implements ProductControllerSwagger{
 
     private final ProductService productService;
 

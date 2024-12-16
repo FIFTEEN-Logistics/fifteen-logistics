@@ -90,7 +90,7 @@ public class ProductService {
 
         List<ProductResponse> contents = products.getContent().stream().map(ProductResponse::of).toList();
 
-        return new PagedModel<>(new PageImpl<>(contents, pageable, products.getSize()));
+        return new PagedModel<>(new PageImpl<>(contents, pageable, products.getTotalElements()));
     }
 
     public ProductResponse getProduct(UUID productId, Long currentUserId, String currentRole) {

@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -19,7 +20,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/orders")
-public class OrderController {
+public class OrderController implements OrderControllerSwagger{
 
     private final OrderService orderService;
 
@@ -38,7 +39,7 @@ public class OrderController {
     }
 
     @GetMapping
-    public ApiResponse<Page<OrderResponse>> getOrders(
+    public ApiResponse<PagedModel<OrderResponse>> getOrders(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,

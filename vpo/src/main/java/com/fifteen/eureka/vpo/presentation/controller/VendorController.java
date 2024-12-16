@@ -19,7 +19,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/vendors")
-public class VendorController {
+public class VendorController implements VendorControllerSwagger{
 
     private final VendorService vendorService;
 
@@ -56,10 +56,10 @@ public class VendorController {
     @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_ADMIN_HUB", "ROLE_ADMIN_VENDOR"})
     @PutMapping("/{vendorId}")
     public ApiResponse<?> updateVendor(
-            @RequestHeader("X-UserId") Long currentUserId,
-            @RequestHeader("X-Role") String currentRole,
             @PathVariable UUID vendorId,
-            @Valid @RequestBody UpdateVendorRequest request) {
+            @Valid @RequestBody UpdateVendorRequest request,
+            @RequestHeader("X-UserId") Long currentUserId,
+            @RequestHeader("X-Role") String currentRole) {
 
         return ApiResponse.OK(ResSuccessCode.UPDATED, vendorService.updateVendor(vendorId, request.toDto(), currentUserId, currentRole));
     }

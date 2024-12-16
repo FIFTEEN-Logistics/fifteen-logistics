@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -144,7 +145,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderResponse> getOrders(Pageable pageable, String keyword, Long currentUserId, String currentRole) {
+    public PagedModel<OrderResponse> getOrders(Pageable pageable, String keyword, Long currentUserId, String currentRole) {
 
         boolean isHubManager = currentRole.equals("ROLE_ADMIN_HUB");
 
@@ -152,7 +153,7 @@ public class OrderService {
 
         List<OrderResponse> contents = orders.getContent().stream().map(OrderResponse::of).toList();
 
-        return new PageImpl<>(contents, pageable, orders.getSize());
+        return new PagedModel<>(new PageImpl<>(contents, pageable, orders.getTotalElements()));
     }
 
     public OrderResponse getOrder(UUID orderId, Long currentUserId, String currentRole) {
