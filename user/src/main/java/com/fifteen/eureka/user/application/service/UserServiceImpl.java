@@ -4,7 +4,7 @@ import com.fifteen.eureka.common.auditor.AuditorAwareImpl;
 import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.common.role.Role;
-import com.fifteen.eureka.user.application.dto.ApprovalRequestDto;
+import com.fifteen.eureka.user.application.dto.auth.ApprovalRequestDto;
 import com.fifteen.eureka.user.application.dto.DeliveryManagerCreateRequest;
 import com.fifteen.eureka.user.application.dto.SignupRequestDto;
 import com.fifteen.eureka.user.application.dto.UserGetListResponseDto;
@@ -182,6 +182,20 @@ public class UserServiceImpl implements UserService {
         throw new CustomApiException(ResErrorCode.FORBIDDEN, "Access denied.");
       }
     }
+    return UserGetResponseDto.builder()
+        .username(user.getUsername())
+        .email(user.getEmail())
+        .slackId(user.getSlackId())
+        .role(user.getRole())
+        .build();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public UserGetResponseDto findUserByIdForService(Long userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "User not found."));
+
     return UserGetResponseDto.builder()
         .username(user.getUsername())
         .email(user.getEmail())

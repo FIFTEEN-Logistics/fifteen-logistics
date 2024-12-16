@@ -1,7 +1,7 @@
 package com.fifteen.eureka.user.application.service;
 
 import com.fifteen.eureka.common.role.Role;
-import com.fifteen.eureka.user.application.dto.ApprovalRequestDto;
+import com.fifteen.eureka.user.application.dto.auth.ApprovalRequestDto;
 import com.fifteen.eureka.user.application.dto.SignupRequestDto;
 import com.fifteen.eureka.user.application.dto.UserGetListResponseDto;
 import com.fifteen.eureka.user.application.dto.UserGetResponseDto;
@@ -21,6 +21,8 @@ public interface UserService {
   UserGetListResponseDto findAllUsers(List<Long> idList, Predicate predicate, Pageable pageable);
 
   UserGetResponseDto findUserById(Long userId, String currentUsername, Role currentRole);
+
+  UserGetResponseDto findUserByIdForService(Long userId);
 
   void deleteUser(Long userId);
 }

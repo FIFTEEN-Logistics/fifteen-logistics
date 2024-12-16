@@ -4,7 +4,7 @@ import com.fifteen.eureka.common.response.ApiResponse;
 import com.fifteen.eureka.common.response.ResSuccessCode;
 import com.fifteen.eureka.common.role.Role;
 import com.fifteen.eureka.common.role.RoleCheck;
-import com.fifteen.eureka.user.application.dto.ApprovalRequestDto;
+import com.fifteen.eureka.user.application.dto.auth.ApprovalRequestDto;
 import com.fifteen.eureka.user.application.dto.SignupRequestDto;
 import com.fifteen.eureka.user.application.dto.UserGetListResponseDto;
 import com.fifteen.eureka.user.application.dto.UserGetResponseDto;
@@ -83,6 +83,14 @@ public class UserController {
     Role role = Role.valueOf(currentRole);
     UserGetResponseDto user = userService.findUserById(userId, currentUsername, role);
 
+    return ResponseEntity.ok(ApiResponse.OK(ResSuccessCode.FETCHED, user));
+  }
+
+  @GetMapping("/service/users/{userId}")
+  public ResponseEntity<ApiResponse<UserGetResponseDto>> findUserByIdForService(
+      @PathVariable Long userId) {
+
+    UserGetResponseDto user = userService.findUserByIdForService(userId);
     return ResponseEntity.ok(ApiResponse.OK(ResSuccessCode.FETCHED, user));
   }
 

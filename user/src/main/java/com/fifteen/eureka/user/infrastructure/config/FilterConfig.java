@@ -6,6 +6,7 @@ public class FilterConfig {
   public static final List<String> EXCLUDED_PATHS = List.of(
       "/api/users/signup",
       "/api/auth/login",
-      "/api/auth/refresh"
+      "/api/auth/refresh",
+      "/api/service/**"
   );
 }
