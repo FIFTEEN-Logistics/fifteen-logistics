@@ -1,4 +1,4 @@
-package com.fifteen.eureka.user.application.dto;
+package com.fifteen.eureka.user.application.dto.user;
 
 import com.fifteen.eureka.common.role.Role;
 import jakarta.validation.constraints.Email;

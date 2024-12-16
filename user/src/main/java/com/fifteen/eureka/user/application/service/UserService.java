@@ -2,10 +2,10 @@ package com.fifteen.eureka.user.application.service;
 
 import com.fifteen.eureka.common.role.Role;
 import com.fifteen.eureka.user.application.dto.auth.ApprovalRequestDto;
-import com.fifteen.eureka.user.application.dto.SignupRequestDto;
-import com.fifteen.eureka.user.application.dto.UserGetListResponseDto;
-import com.fifteen.eureka.user.application.dto.UserGetResponseDto;
-import com.fifteen.eureka.user.application.dto.UserUpdateRequestDto;
+import com.fifteen.eureka.user.application.dto.user.SignupRequestDto;
+import com.fifteen.eureka.user.application.dto.user.UserGetListResponseDto;
+import com.fifteen.eureka.user.application.dto.user.UserGetResponseDto;
+import com.fifteen.eureka.user.application.dto.user.UserUpdateRequestDto;
 import com.querydsl.core.types.Predicate;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
