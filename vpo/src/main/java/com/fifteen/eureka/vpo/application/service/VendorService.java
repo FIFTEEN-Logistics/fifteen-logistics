@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,8 +45,8 @@ public class VendorService {
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
         if(currentRole.equals("ROLE_ADMIN_HUB")) {
-            if(!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
-                throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
+            if (!Objects.equals(hubDetailsResponse.getHubManagerId(), currentUserId)) {
+                throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "해당 허브 담당자가 아닌 경우 업체 생성이 불가합니다.");
             }
         }
 
@@ -82,7 +83,7 @@ public class VendorService {
 
     public VendorResponse getVendor(UUID vendorId) {
         Vendor vendor = vendorRepository.findById(vendorId)
-                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 업체를 찾을 수 없습니다."));
         return VendorResponse.of(vendor);
     }
 
@@ -94,14 +95,14 @@ public class VendorService {
 
         // 허브담당자
         if (currentRole.equals("ROLE_ADMIN_HUB")) {
-            if (!vendor.getHubManagerId().equals(currentUserId)) {
+            if (!Objects.equals(vendor.getHubManagerId(), currentUserId)) {
                 throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "해당 허브 담당자가 아닌 경우 업체 수정이 불가합니다.");
             }
         }
 
         // 업체담당자
         if (currentRole.equals("ROLE_ADMIN_VENDOR")) {
-            if (!vendor.getUserId().equals(currentUserId)) {
+            if (!Objects.equals(vendor.getUserId(), currentUserId)) {
                 throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "해당 업체 담당자가 아닌 경우 업체 수정이 불가합니다.");
             }
         }
@@ -141,7 +142,7 @@ public class VendorService {
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 업체를 찾을 수 없습니다."));
 
         if (currentRole.equals("ROLE_ADMIN_HUB")) {
-            if (!vendor.getHubManagerId().equals(currentUserId)) {
+            if (!Objects.equals(vendor.getHubManagerId(), currentUserId)) {
                 throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
             }
         }
