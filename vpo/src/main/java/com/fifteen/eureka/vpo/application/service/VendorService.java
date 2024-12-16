@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,15 +36,14 @@ public class VendorService {
     @Transactional
     public VendorResponse createVendor(CreateVendorDto request, Long currentUserId, String currentRole) {
 
-        if(currentRole.equals("ROLE_ADMIN_HUB")) {
-
             HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
                     hubClient.getHub(request.getHubId()).getData())
                         .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
-            if(!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
-                throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
-            }
+            if(currentRole.equals("ROLE_ADMIN_HUB")) {
+                if(!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
+                    throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
+                }
         }
 
 
@@ -58,6 +58,7 @@ public class VendorService {
         Vendor vendor = Vendor.create(
                 request.getHubId(),
                 request.getUserId(), //업체 담당자 ID
+                hubDetailsResponse.getHubManagerId(),
                 request.getVendorName(),
                 request.getVendorType(),
                 request.getVendorAddress()
@@ -93,31 +94,44 @@ public class VendorService {
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
         // 허브담당자
-        if(currentRole.equals("ROLE_ADMIN_HUB")) {
+        if (currentRole.equals("ROLE_ADMIN_HUB")) {
 
             HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
                             hubClient.getHub(vendor.getHubId()).getData())
-                    .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
+                    .orElseThrow(() -> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
-            if(!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
+            if (!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
                 throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
             }
         }
 
         // 업체담당자
-        if(currentRole.equals("ROLE_ADMIN_VENDOR")) {
-            if(!vendor.getUserId().equals(currentUserId)) {
+        if (currentRole.equals("ROLE_ADMIN_VENDOR")) {
+            if (!vendor.getUserId().equals(currentUserId)) {
                 throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
             }
         }
 
         // 수정하려는 hubId 존재하는지 검사
-        if(!hubClient.getHub(request.getHubId()).getCode().equals(20000)) {
-            throw new CustomApiException(ResErrorCode.NOT_FOUND,"해당 허브를 찾을 수 없습니다.");
+        if (!vendor.getHubId().equals(request.getHubId())) {
+            HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
+                            hubClient.getHub(request.getHubId()).getData())
+                    .orElseThrow(() -> new CustomApiException(ResErrorCode.BAD_REQUEST));
+
+            vendor.hunInfoUpdate(hubDetailsResponse.getId(), hubDetailsResponse.getHubManagerId());
+        }
+
+
+        if (!vendor.getUserId().equals(request.getUserId())) {
+            if (!userClient.findUserById(
+                    request.getUserId(),
+                    "test",
+                    "ROLE_ADMIN_MASTER").getStatusCode().equals(HttpStatusCode.valueOf(200))) {
+                throw new CustomApiException(ResErrorCode.NOT_FOUND, "해당 유저를 찾을 수 없습니다.");
+            }
         }
 
         vendor.update(
-                request.getHubId(),
                 request.getUserId(),
                 request.getVendorName(),
                 request.getVendorType(),
@@ -125,7 +139,6 @@ public class VendorService {
         );
 
         return VendorResponse.of(vendor);
-
     }
 
     public VendorResponse deleteVendor(UUID vendorId, Long currentUserId, String currentRole) {

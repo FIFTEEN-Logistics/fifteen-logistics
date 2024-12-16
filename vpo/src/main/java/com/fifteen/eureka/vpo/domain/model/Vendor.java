@@ -32,6 +32,9 @@ public class Vendor extends BaseEntity {
     private UUID hubId;
 
     @Column(nullable = false)
+    private Long hubManagerId;
+
+    @Column(nullable = false)
     private String vendorName;
 
     @Column(nullable = false)
@@ -53,22 +56,27 @@ public class Vendor extends BaseEntity {
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> receivedOrders = new ArrayList<>();
 
-    public static Vendor create(UUID hubId, Long userId, String vendorName, VendorType vendorType, String vendorAddress) {
+    public static Vendor create(UUID hubId, Long userId, Long hubManagerId, String vendorName, VendorType vendorType, String vendorAddress) {
         return Vendor.builder()
                 .hubId(hubId)
                 .userId(userId)
+                .hubManagerId(hubManagerId)
                 .vendorName(vendorName)
                 .vendorType(vendorType)
                 .vendorAddress(vendorAddress)
                 .build();
     }
 
-    public void update(UUID hubId, Long userId, String vendorName, VendorType vendorType, String vendorAddress) {
-        this.hubId = hubId;
+    public void update(Long userId, String vendorName, VendorType vendorType, String vendorAddress) {
         this.userId = userId;
         this.vendorName = vendorName;
         this.vendorType = vendorType;
         this.vendorAddress = vendorAddress;
+    }
+
+    public void hunInfoUpdate(UUID hubId, Long hubManagerId) {
+        this.hubId = hubId;
+        this.hubManagerId = hubManagerId;
     }
 
 }

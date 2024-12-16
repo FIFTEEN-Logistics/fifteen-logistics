@@ -14,6 +14,7 @@ public class VendorResponse {
     private UUID vendorId;
     private UUID hubId;
     private Long userId;
+    private Long hubManagerId;
     private String vendorName;
     private String vendorAddress;
     private VendorType vendorType;
@@ -23,6 +24,7 @@ public class VendorResponse {
                 .vendorId(vendor.getVendorId())
                 .hubId(vendor.getHubId())
                 .userId(vendor.getUserId())
+                .hubManagerId(vendor.getHubManagerId())
                 .vendorName(vendor.getVendorName())
                 .vendorAddress(vendor.getVendorAddress())
                 .vendorType(vendor.getVendorType())
