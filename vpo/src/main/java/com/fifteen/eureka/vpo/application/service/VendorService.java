@@ -111,6 +111,11 @@ public class VendorService {
             }
         }
 
+        // 수정하려는 hubId 존재하는지 검사
+        if(!hubClient.getHub(request.getHubId()).getCode().equals(20000)) {
+            throw new CustomApiException(ResErrorCode.NOT_FOUND,"해당 허브를 찾을 수 없습니다.");
+        }
+
         vendor.update(
                 request.getHubId(),
                 request.getUserId(),
