@@ -9,9 +9,8 @@ import java.util.UUID;
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 public class CreateProductDto {
-    private UUID vendorId;
 
-    private UUID hubId;
+    private UUID vendorId;
 
     private String productName;
 
@@ -20,11 +19,10 @@ public class CreateProductDto {
     private int quantity;
 
     public static CreateProductDto create(
-            UUID vendorId,UUID hubId,String productName,int productPrice,int quantity) {
+            UUID vendorId,String productName,int productPrice,int quantity) {
 
         return CreateProductDto.builder()
                 .vendorId(vendorId)
-                .hubId(hubId)
                 .productName(productName)
                 .productPrice(productPrice)
                 .quantity(quantity)

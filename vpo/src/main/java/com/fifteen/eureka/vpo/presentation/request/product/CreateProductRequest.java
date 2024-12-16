@@ -12,9 +12,6 @@ public class CreateProductRequest {
     @NotNull(message = "업체 ID는 필수입니다.")
     private UUID vendorId;
 
-    @NotNull(message = "허브 ID는 필수입니다.")
-    private UUID hubId;
-
     @NotBlank(message = "상품 이름은 필수입니다.")
     @Size(max = 100, message = "상품 이름은 최대 100자까지 입력할 수 있습니다.")
     private String productName;
@@ -28,7 +25,7 @@ public class CreateProductRequest {
     private int quantity;
 
     public CreateProductDto toDto() {
-        return CreateProductDto.create(this.vendorId, this.hubId, this.productName, this.productPrice, this.quantity);
+        return CreateProductDto.create(this.vendorId, this.productName, this.productPrice, this.quantity);
     }
 
 
