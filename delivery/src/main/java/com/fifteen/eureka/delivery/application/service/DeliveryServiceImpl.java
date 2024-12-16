@@ -119,6 +119,12 @@ public class DeliveryServiceImpl implements DeliveryService {
 		deliveryRoute.getDelivery().updateDeliveryStatus(deliveryStatus);
 	}
 
+	@Override
+	@Transactional
+	public void deleteDelivery(UUID deliveryId) {
+		deliveryRepository.deleteById(deliveryId);
+	}
+
 	private List<DeliveryRoute> getDeliveryRouteList(Hub startHub, Hub endHub) {
 		List<DeliveryRoute> deliveryRouteList = new ArrayList<>();
 

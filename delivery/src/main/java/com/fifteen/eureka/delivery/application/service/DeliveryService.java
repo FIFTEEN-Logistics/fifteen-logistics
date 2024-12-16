@@ -20,4 +20,6 @@ public interface DeliveryService {
 	Page<DeliverySimpleResponse> getDeliveries(Pageable pageable);
 
 	void updateDeliveryStatus(UUID deliveryRouteId, Role role, long userId, DeliveryStatus deliveryStatus);
+
+	void deleteDelivery(UUID deliveryId);
 }
