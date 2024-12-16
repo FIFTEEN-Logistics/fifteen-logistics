@@ -13,6 +13,6 @@ import java.util.UUID;
 public interface HubClient {
 
     @GetMapping("/api/hubs/{hubId}")
-    public ApiResponse<HubDetailsResponse> getHub(@PathVariable UUID hubId);
+    public ResponseEntity<HubDetailsResponse> getHub(@PathVariable UUID hubId);
 
 }

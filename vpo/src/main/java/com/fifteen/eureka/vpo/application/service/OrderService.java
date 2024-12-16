@@ -75,7 +75,7 @@ public class OrderService {
 
 
         DeliveryCreateResponse deliveryCreateResponse = Optional.ofNullable(
-                (DeliveryCreateResponse) deliveryClient.createDelivery(deliveryCreateRequest).getData())
+                (DeliveryCreateResponse) deliveryClient.createDelivery(deliveryCreateRequest).getBody())
                 .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
 //        DeliveryCreateResponse deliveryCreateResponse = Optional.ofNullable(
@@ -185,7 +185,7 @@ public class OrderService {
         }
 
         //배송 상태 확인
-        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getData())
+        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getBody())
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
         if(!deliveryDetailsResponse.getDeliveryStatus().equals(DeliveryDetailsResponse.DeliveryStatus.HUB_WAITING)) {
@@ -224,7 +224,7 @@ public class OrderService {
         }
 
         //배송 상태 확인
-        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getData())
+        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getBody())
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
         if(!deliveryDetailsResponse.getDeliveryStatus().equals(DeliveryDetailsResponse.DeliveryStatus.HUB_WAITING)) {
@@ -263,7 +263,7 @@ public class OrderService {
             }
         }
 
-        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getData())
+        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getBody())
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
         if(!deliveryDetailsResponse.getDeliveryStatus().equals(DeliveryDetailsResponse.DeliveryStatus.HUB_WAITING)) {

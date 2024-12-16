@@ -37,7 +37,7 @@ public class VendorService {
     public VendorResponse createVendor(CreateVendorDto request, Long currentUserId, String currentRole) {
 
         HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
-                hubClient.getHub(request.getHubId()).getData())
+                hubClient.getHub(request.getHubId()).getBody())
                     .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
         if(currentRole.equals("ROLE_ADMIN_HUB")) {
@@ -97,7 +97,7 @@ public class VendorService {
         if (currentRole.equals("ROLE_ADMIN_HUB")) {
 
             HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
-                            hubClient.getHub(vendor.getHubId()).getData())
+                            hubClient.getHub(vendor.getHubId()).getBody())
                     .orElseThrow(() -> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
             if (!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
@@ -115,7 +115,7 @@ public class VendorService {
         // 수정하려는 hubId 존재하는지 검사
         if (!vendor.getHubId().equals(request.getHubId())) {
             HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
-                            hubClient.getHub(request.getHubId()).getData())
+                            hubClient.getHub(request.getHubId()).getBody())
                     .orElseThrow(() -> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
             vendor.hunInfoUpdate(hubDetailsResponse.getId(), hubDetailsResponse.getHubManagerId());
@@ -150,7 +150,7 @@ public class VendorService {
         if(currentRole.equals("ROLE_ADMIN_HUB")) {
 
             HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
-                            hubClient.getHub(vendor.getHubId()).getData())
+                            hubClient.getHub(vendor.getHubId()).getBody())
                     .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
             if(!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {

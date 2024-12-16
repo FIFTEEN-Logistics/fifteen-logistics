@@ -48,7 +48,7 @@ public class ProductService {
         if (currentRole.equals("ROLE_ADMIN_HUB")) {
 
             HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
-                            hubClient.getHub(vendor.getHubId()).getData())
+                            hubClient.getHub(vendor.getHubId()).getBody())
                     .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
             if(!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
@@ -114,7 +114,7 @@ public class ProductService {
 
         if (currentRole.equals("ROLE_ADMIN_HUB")) {
             HubDetailsResponse hubDetailsResponse = Optional.ofNullable(
-                            hubClient.getHub(product.getVendor().getHubId()).getData())
+                            hubClient.getHub(product.getVendor().getHubId()).getBody())
                     .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
             if(!hubDetailsResponse.getHubManagerId().equals(currentUserId)) {
