@@ -1,4 +1,4 @@
-package com.fifteen.eureka.user.application.dto;
+package com.fifteen.eureka.user.application.dto.deliveryManager;
 
 import java.util.UUID;
 import lombok.Builder;

@@ -1,6 +1,6 @@
 package com.fifteen.eureka.user.infrastructure.client;
 
-import com.fifteen.eureka.user.application.dto.DeliveryManagerCreateRequest;
+import com.fifteen.eureka.user.application.dto.deliveryManager.DeliveryManagerCreateRequest;
 import com.fifteen.eureka.user.infrastructure.config.FeignHeaderConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
