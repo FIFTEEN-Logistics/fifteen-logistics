@@ -93,8 +93,8 @@ public class OrderService {
         return OrderResponse.of(order);
     }
 
-
-    public Page<OrderResponse> getOrders(Pageable pageable) {
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> getOrders(Pageable pageable, String keyword) {
         Page<Order> orders = orderRepository.findAll(pageable);
 
         List<OrderResponse> contents = orders.getContent().stream().map(OrderResponse::of).toList();
@@ -119,6 +119,8 @@ public class OrderService {
 
     @Transactional
     public OrderResponse updateOrder(UUID orderId, UpdateOrderDto orderRequest, List<UpdateOrderDetailDto> orderDetailsRequest) {
+
+        //role=hub admin -> hub getdata get userId != userid -> 자신의 허브만 주문 수정
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
@@ -149,6 +151,8 @@ public class OrderService {
     @Transactional
     public OrderResponse cancelOrder(UUID orderId) {
 
+        //role=hub admin -> hub getdata get userId != userid -> 자신의 허브만 주문 수정
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
@@ -166,13 +170,14 @@ public class OrderService {
             orderProductService.updateProduct(product,orderDetail.getQuantity(), order.isCanceled());
         }
 
+
         return OrderResponse.of(order);
 
     }
 
 
     public OrderResponse deleteOrder(UUID orderId) {
-
+        //role=hub admin -> hub getdata get userId != userid -> 자신의 허브만 주문 삭제
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 

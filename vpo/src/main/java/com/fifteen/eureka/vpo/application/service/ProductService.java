@@ -27,7 +27,11 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final VendorRepository vendorRepository;
 
+    @Transactional
     public ProductResponse createProduct(CreateProductDto request) {
+
+        //role=hub admin -> hub getdata get userId != userid -> 자신의 허브만 상품생성
+        //vendor.getuserId != userid -> 자신의 업체만 상품 생성
 
         Vendor vendor = vendorRepository.findById(request.getVendorId())
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
@@ -49,7 +53,8 @@ public class ProductService {
         return ProductResponse.of(product);
     }
 
-    public Page<ProductResponse> getProducts(Pageable pageable) {
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getProducts(Pageable pageable, String keyword) {
 
         Page<Product> products = productRepository.findAll(pageable);
 
@@ -67,6 +72,9 @@ public class ProductService {
     @Transactional
     public ProductResponse updateProduct(UUID productId, UpdateProductDto request) {
 
+        //role=hub admin -> hub getdata get userId != userid -> 자신의 허브만 상품수정
+        //vendor.getuserId != userid -> 자신의 업체만 상품 생성
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
@@ -80,6 +88,8 @@ public class ProductService {
     }
 
     public ProductResponse deleteProduct(UUID productId) {
+
+        //role=hub admin -> hub getdata get userId != userid -> 자신의 허브만 상품삭제
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));

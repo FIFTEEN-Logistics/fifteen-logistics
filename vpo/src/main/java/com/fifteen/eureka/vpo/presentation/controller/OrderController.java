@@ -2,15 +2,16 @@ package com.fifteen.eureka.vpo.presentation.controller;
 
 import com.fifteen.eureka.common.response.ApiResponse;
 import com.fifteen.eureka.common.response.ResSuccessCode;
+import com.fifteen.eureka.common.role.RoleCheck;
 import com.fifteen.eureka.vpo.application.dto.order.OrderResponse;
 import com.fifteen.eureka.vpo.application.service.OrderService;
+import com.fifteen.eureka.vpo.infrastructure.util.PagingUtil;
 import com.fifteen.eureka.vpo.presentation.request.order.CreateOrderRequest;
 import com.fifteen.eureka.vpo.presentation.request.order.UpdateOrderRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -33,8 +34,14 @@ public class OrderController {
     }
 
     @GetMapping
-    public ApiResponse<Page<OrderResponse>> getOrders(@PageableDefault(sort = "createdAt") Pageable pageable) {
-        return ApiResponse.OK(ResSuccessCode.SUCCESS, orderService.getOrders(pageable));
+    public ApiResponse<Page<OrderResponse>> getOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "true") boolean isAsc,
+            @RequestParam(required = false) String keyword) {
+        Pageable pageable = PagingUtil.createPageable(page, size, isAsc, sortBy);
+        return ApiResponse.OK(ResSuccessCode.SUCCESS, orderService.getOrders(pageable, keyword));
     }
 
     @GetMapping("/{orderId}")
@@ -42,6 +49,7 @@ public class OrderController {
         return ApiResponse.OK(ResSuccessCode.SUCCESS, orderService.getOrder(orderId));
     }
 
+    @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_DELIVERY_HUB"})
     @PutMapping("/{orderId}")
     public ApiResponse<?> updateOrder(
             @PathVariable UUID orderId,
@@ -54,11 +62,13 @@ public class OrderController {
         ));
     }
 
-    @PatchMapping("/{orderId}/cancel")
+    @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_DELIVERY_HUB"})
+    @PutMapping("/{orderId}/cancel")
     public ApiResponse<?> cancelOrder(@PathVariable UUID orderId) {
         return ApiResponse.OK(ResSuccessCode.UPDATED, orderService.cancelOrder(orderId));
     }
 
+    @RoleCheck({"ROLE_ADMIN_MASTER", "ROLE_DELIVERY_HUB"})
     @DeleteMapping("/{orderId}")
     public ApiResponse<?> deleteOrder(@PathVariable UUID orderId) {
         return ApiResponse.OK(ResSuccessCode.DELETED, orderService.deleteOrder(orderId));

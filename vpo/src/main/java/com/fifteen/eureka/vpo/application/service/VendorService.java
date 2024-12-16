@@ -27,7 +27,7 @@ public class VendorService {
     private final HubClient hubClient;
     private final UserClient userClient;
 
-
+    @Transactional
     public VendorResponse createVendor(CreateVendorDto request) {
 
 //        if(!hubClient.getHub(request.getHubId()).getCode().equals(20000)) {
@@ -37,6 +37,9 @@ public class VendorService {
 //        if(!userClient.getUser(request.getUserId()).getCode().equals(20000)) {
 //            throw new CustomApiException(ResErrorCode.NOT_FOUND);
 //        }
+
+        //role=hub admin -> hub getdata get userId != userid -> 자신의 허브만 업체 생성 가능
+
 
         Vendor vendor = Vendor.create(
                 request.getHubId(),
@@ -51,7 +54,8 @@ public class VendorService {
         return VendorResponse.of(vendor);
     }
 
-    public Page<VendorResponse> getVendors(Pageable pageable) {
+    @Transactional(readOnly = true)
+    public Page<VendorResponse> getVendors(Pageable pageable, String keyword) {
         Page<Vendor> vendors = vendorRepository.findAll(pageable);
         List<VendorResponse> contents = vendors.getContent().stream().map(VendorResponse::of).toList();
         return new PageImpl<>(contents, pageable, vendors.getSize());
@@ -65,6 +69,9 @@ public class VendorService {
 
     @Transactional
     public VendorResponse updateVendor(UUID vendorId,UpdateVendorDto request) {
+
+        //role=hub admin -> hub getdata get userId != userid -> 자신의 허브만 업체 수정 가능
+        //vendor.getuserId != userid -> 자신의 업체만 수정 가능
 
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
@@ -91,6 +98,8 @@ public class VendorService {
     }
 
     public VendorResponse deleteVendor(UUID vendorId) {
+
+        //role=hub admin -> hub getdata get userId != userid -> 자신의 허브만 업체 삭제 가능
 
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
