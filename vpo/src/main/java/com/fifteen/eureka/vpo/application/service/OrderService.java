@@ -56,7 +56,7 @@ public class OrderService {
         Vendor supplier = checkVendorType(orderRequest.getSupplierId(), VendorType.SUPPLIER);
 
         Order order = Order.create(
-                orderRequest.getUserId(),
+                currentUserId,
                 orderRequest.getOrderRequest(),
                 receiver,
                 supplier
@@ -157,15 +157,17 @@ public class OrderService {
 
     public OrderResponse getOrder(UUID orderId, Long currentUserId, String currentRole) {
 
-        Order order = orderRepository.findById(orderId).orElseThrow();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(()-> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 주문을 찾을 수 없습니다."));
 
         if (currentRole.equals("ROLE_ADMIN_HUB")) {
-            if (!order.getSupplier().getHubManagerId().equals(currentUserId) && !order.getReceiver().getHubManagerId().equals(currentUserId)) {
-                throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
+            if (!Objects.equals(order.getSupplier().getHubManagerId(), currentUserId)
+                    && !Objects.equals(order.getReceiver().getHubManagerId(), currentUserId)) {
+                throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "담당 허브의 주문만 조회가 가능합니다.");
             }
         } else {
-            if (!order.getUserId().equals(currentUserId)) {
-                throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
+            if (!Objects.equals(order.getUserId(), currentUserId)) {
+                throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "본인의 주문만 조회가 가능합니다.");
             }
         }
 
@@ -192,18 +194,18 @@ public class OrderService {
             throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 주문은 배송 시작상태로 수정이 불가합니다.");
         }
 
-        // 수령업체 변경 처리 -> 배달, 슬랙메시지 전송
-        if (!order.getReceiver().getVendorId().equals(orderRequest.getReceiverId())) {
-
-            Vendor receiver = checkVendorType(orderRequest.getReceiverId(), VendorType.RECEIVER);
-
-            order.updateReceiver(receiver);
-        }
-
-        // 요청사항 변경 처리 -> 배달, 슬랙메시지 전송
-        if (!order.getOrderRequest().equals(orderRequest.getOrderRequest())) {
-            order.updateOrderRequest(orderRequest.getOrderRequest());
-        }
+//        // 수령업체 변경 처리 -> 배달, 슬랙메시지 전송
+//        if (!order.getReceiver().getVendorId().equals(orderRequest.getReceiverId())) {
+//
+//            Vendor receiver = checkVendorType(orderRequest.getReceiverId(), VendorType.RECEIVER);
+//
+//            order.updateReceiver(receiver);
+//        }
+//
+//        // 요청사항 변경 처리 -> 배달, 슬랙메시지 전송
+//        if (!order.getOrderRequest().equals(orderRequest.getOrderRequest())) {
+//            order.updateOrderRequest(orderRequest.getOrderRequest());
+//        }
 
         order.calculateTotalPrice();
 

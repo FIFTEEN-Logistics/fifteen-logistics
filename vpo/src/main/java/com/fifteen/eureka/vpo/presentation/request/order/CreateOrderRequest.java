@@ -13,9 +13,6 @@ import java.util.UUID;
 @Getter
 public class CreateOrderRequest {
 
-    @NotNull(message = "주문자 ID는 필수입니다.")
-    private Long userId;
-
     @NotNull(message = "수령 업체 ID는 필수입니다.")
     private UUID receiverId;
 
@@ -36,7 +33,6 @@ public class CreateOrderRequest {
 
     public CreateOrderDto toDto() {
         return CreateOrderDto.create(
-                this.userId,
                 this.receiverId,
                 this.supplierId,
                 this.orderRequest
