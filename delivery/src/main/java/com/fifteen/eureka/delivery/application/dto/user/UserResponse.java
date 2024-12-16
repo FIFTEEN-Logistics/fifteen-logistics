@@ -1,6 +1,6 @@
 package com.fifteen.eureka.delivery.application.dto.user;
 
-import com.fifteen.eureka.delivery.common.role.Role;
+import com.fifteen.eureka.common.role.Role;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

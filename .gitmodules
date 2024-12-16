@@ -1,0 +1,3 @@
+[submodule "delivery/src/main/java/com/fifteen/eureka/common"]
+	path = delivery/src/main/java/com/fifteen/eureka/common
+	url = https://github.com/FIFTEEN-Logistics/common.git

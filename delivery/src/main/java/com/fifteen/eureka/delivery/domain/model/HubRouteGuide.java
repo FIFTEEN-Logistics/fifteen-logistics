@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
-import com.fifteen.eureka.delivery.common.auditor.BaseEntity;
+import com.fifteen.eureka.common.auditor.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
