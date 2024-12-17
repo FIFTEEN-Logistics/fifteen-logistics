@@ -12,16 +12,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Getter
 @NoArgsConstructor
 @Entity
 @Table(name = "p_user")
-@SQLDelete(sql = "UPDATE p_user SET is_deleted = true, approval_status = 'REJECTED' WHERE id = ?")
-@Where(clause = "is_deleted = false")
+@SQLRestriction(value = "is_deleted = false")
 public class User extends BaseEntity {
 
   @Id
@@ -78,5 +76,4 @@ public class User extends BaseEntity {
       this.password = passwordEncoder.encode(password);
     }
   }
-
 }
