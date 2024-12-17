@@ -79,6 +79,8 @@ public class OrderService {
 
         }
 
+        orderRepository.save(order);
+
         // 배달 전달
         DeliveryCreateRequest deliveryCreateRequest = DeliveryCreateRequest.builder()
                 .orderId(order.getOrderId())
@@ -98,7 +100,6 @@ public class OrderService {
 
         order.calculateTotalPrice();
 
-        orderRepository.save(order);
 
         // 주문자 email 가져오기
         UserGetResponseDto userGetResponseDto = Objects.requireNonNull(
@@ -232,7 +233,7 @@ public class OrderService {
 
     }
 
-
+    @Transactional
     public OrderResponse deleteOrder(UUID orderId, Long currentUserId, String currentRole) {
         //배송 상태 확인
         Order order = orderRepository.findById(orderId)

@@ -2,6 +2,7 @@ package com.fifteen.eureka.vpo.application.service;
 
 import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.common.response.ResErrorCode;
+import com.fifteen.eureka.common.role.Role;
 import com.fifteen.eureka.vpo.application.dto.vendor.CreateVendorDto;
 import com.fifteen.eureka.vpo.application.dto.vendor.UpdateVendorDto;
 import com.fifteen.eureka.vpo.application.dto.vendor.VendorResponse;
@@ -58,7 +59,7 @@ public class VendorService {
         UserGetResponseDto userGetResponseDto = Optional.ofNullable(userClient.findUserByIdForService(request.getUserId()).getBody().getData())
                 .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
-        if (!userGetResponseDto.getRole().equals(UserGetResponseDto.Role.ROLE_ADMIN_VENDOR)) {
+        if (!userGetResponseDto.getRole().equals(Role.ROLE_ADMIN_VENDOR)) {
             throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "업체 담당자 권한을 가진 사용자가 아닙니다.");
         }
 
@@ -126,7 +127,7 @@ public class VendorService {
             UserGetResponseDto userGetResponseDto = Optional.ofNullable(userClient.findUserByIdForService(currentUserId).getBody().getData())
                 .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
-            if (!userGetResponseDto.getRole().equals(UserGetResponseDto.Role.ROLE_ADMIN_VENDOR)) {
+            if (!userGetResponseDto.getRole().equals(Role.ROLE_ADMIN_VENDOR)) {
                 throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "업체 담당자 권한을 가진 사용자가 아닙니다.");
             }
         }
