@@ -6,8 +6,12 @@ import com.fifteen.eureka.common.role.Role;
 import com.fifteen.eureka.vpo.application.dto.vendor.CreateVendorDto;
 import com.fifteen.eureka.vpo.application.dto.vendor.UpdateVendorDto;
 import com.fifteen.eureka.vpo.application.dto.vendor.VendorResponse;
+import com.fifteen.eureka.vpo.domain.model.Order;
 import com.fifteen.eureka.vpo.domain.model.Vendor;
+import com.fifteen.eureka.vpo.domain.model.VendorType;
 import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
+import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryClient;
+import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryDetailsResponse;
 import com.fifteen.eureka.vpo.infrastructure.client.hub.HubClient;
 import com.fifteen.eureka.vpo.infrastructure.client.hub.HubDetailsResponse;
 import com.fifteen.eureka.vpo.infrastructure.client.user.UserClient;
@@ -36,6 +40,7 @@ public class VendorService {
     private final VendorQueryRepository vendorQueryRepository;
     private final HubClient hubClient;
     private final UserClient userClient;
+    private final DeliveryClient deliveryClient;
 
     @Transactional
     public VendorResponse createVendor(CreateVendorDto request, Long currentUserId, String currentRole) {
@@ -160,9 +165,32 @@ public class VendorService {
             }
         }
 
-        vendorRepository.delete(vendor);
+        if (vendor.getVendorType().equals(VendorType.SUPPLIER)) {
+            for (Order suppliedOrder : vendor.getSuppliedOrders()) {
+                if (!suppliedOrder.isCanceled()) {
+                    checkDeliveryStatus(suppliedOrder.getDeliveryId());
+                }
+            }
+        } else {
+            for (Order receivedOrder : vendor.getReceivedOrders()) {
+                if (!receivedOrder.isCanceled()) {
+                    checkDeliveryStatus(receivedOrder.getDeliveryId());
+                }
+            }
+        }
+
+        vendor.markAsDeleted();
 
         return VendorResponse.of(vendor);
 
+    }
+
+    public void checkDeliveryStatus(UUID deliveryId) {
+        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(deliveryId).getData())
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 배송을 찾을 수 없습니다."));
+
+        if (!DeliveryDetailsResponse.DeliveryStatus.DST_ARRIVED.equals(deliveryDetailsResponse.getDeliveryStatus())) {
+            throw new CustomApiException(ResErrorCode.BAD_REQUEST, "배달 진행중인 상품은 삭제할 수 없습니다.");
+        }
     }
 }

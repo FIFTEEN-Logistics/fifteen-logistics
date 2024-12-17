@@ -2,6 +2,7 @@ package com.fifteen.eureka.vpo.application.service;
 
 import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.common.response.ResErrorCode;
+import com.fifteen.eureka.common.response.ResSuccessCode;
 import com.fifteen.eureka.vpo.application.dto.order.*;
 import com.fifteen.eureka.vpo.domain.model.*;
 import com.fifteen.eureka.vpo.domain.repository.OrderRepository;
@@ -93,7 +94,7 @@ public class OrderService {
 
 
         DeliveryCreateResponse deliveryCreateResponse = Optional.ofNullable(
-                (DeliveryCreateResponse) deliveryClient.createDelivery(deliveryCreateRequest).getBody())
+                (DeliveryCreateResponse) deliveryClient.createDelivery(deliveryCreateRequest).getData())
                 .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
         order.addDelivery(deliveryCreateResponse.getDeliveryId());
@@ -174,7 +175,7 @@ public class OrderService {
         }
 
         //배송 상태 확인
-        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getBody())
+        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getData())
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
         if(!deliveryDetailsResponse.getDeliveryStatus().equals(DeliveryDetailsResponse.DeliveryStatus.HUB_WAITING)) {
@@ -206,15 +207,7 @@ public class OrderService {
             throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 주문은 이미 취소된 주문입니다.");
         }
 
-        //배송 상태 확인
-//        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getBody())
-//                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
-//
-//        if(!deliveryDetailsResponse.getDeliveryStatus().equals(DeliveryDetailsResponse.DeliveryStatus.HUB_WAITING)) {
-//            throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 주문은 배송 시작상태로 취소가 불가합니다.");
-//        }
-
-        if (!deliveryClient.deleteDelivery(order.getDeliveryId()).getCode().equals(20003)) {
+        if (!deliveryClient.deleteDelivery(order.getDeliveryId()).getCode().equals(ResSuccessCode.SUCCESS.getCode())) {
             throw new CustomApiException(ResErrorCode.INTERNAL_SERVER_ERROR, "주문 취소에 실패하였습니다.");
         }
 
@@ -245,14 +238,16 @@ public class OrderService {
             }
         }
 
-        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getBody())
+        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getData())
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
         if(!deliveryDetailsResponse.getDeliveryStatus().equals(DeliveryDetailsResponse.DeliveryStatus.HUB_WAITING)) {
             throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 주문은 배송 시작상태로 삭제가 불가합니다.");
         }
 
-        orderRepository.delete(order);
+        order.markAsDeleted();
+
+        order.getOrderDetails().forEach(OrderDetail::markAsDeleted);
 
         return OrderResponse.of(order);
 

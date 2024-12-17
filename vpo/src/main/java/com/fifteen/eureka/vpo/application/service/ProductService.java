@@ -5,11 +5,14 @@ import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.vpo.application.dto.product.CreateProductDto;
 import com.fifteen.eureka.vpo.application.dto.product.ProductResponse;
 import com.fifteen.eureka.vpo.application.dto.product.UpdateProductDto;
+import com.fifteen.eureka.vpo.domain.model.Order;
 import com.fifteen.eureka.vpo.domain.model.Product;
 import com.fifteen.eureka.vpo.domain.model.Vendor;
 import com.fifteen.eureka.vpo.domain.model.VendorType;
 import com.fifteen.eureka.vpo.domain.repository.ProductRepository;
 import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
+import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryClient;
+import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryDetailsResponse;
 import com.fifteen.eureka.vpo.infrastructure.client.hub.HubClient;
 import com.fifteen.eureka.vpo.infrastructure.client.hub.HubDetailsResponse;
 import com.fifteen.eureka.vpo.infrastructure.repository.ProductQueryRepository;
@@ -34,6 +37,7 @@ public class ProductService {
     private final VendorRepository vendorRepository;
     private final ProductQueryRepository productQueryRepository;
     private final HubClient hubClient;
+    private final DeliveryClient deliveryClient;
 
     @Transactional
     public ProductResponse createProduct(CreateProductDto request, Long currentUserId, String currentRole) {
@@ -144,6 +148,7 @@ public class ProductService {
         return ProductResponse.of(product);
     }
 
+    @Transactional
     public ProductResponse deleteProduct(UUID productId, Long currentUserId, String currentRole) {
 
         Product product = productRepository.findById(productId)
@@ -155,7 +160,18 @@ public class ProductService {
             }
         }
 
-        productRepository.delete(product);
+
+        for (Order suppliedOrder : product.getVendor().getSuppliedOrders()) {
+            if (!suppliedOrder.isCanceled()) {
+                DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(suppliedOrder.getDeliveryId()).getData())
+                        .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 배송을 찾을 수 없습니다."));
+                if (!deliveryDetailsResponse.getDeliveryStatus().equals(DeliveryDetailsResponse.DeliveryStatus.DST_ARRIVED)) {
+                    throw new CustomApiException(ResErrorCode.BAD_REQUEST, "배달 진행중인 상품은 삭제할 수 없습니다.");
+                }
+            }
+        }
+
+        product.markAsDeleted();
 
         return ProductResponse.of(product);
 

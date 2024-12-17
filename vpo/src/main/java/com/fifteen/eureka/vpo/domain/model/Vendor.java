@@ -3,9 +3,8 @@ package com.fifteen.eureka.vpo.domain.model;
 import com.fifteen.eureka.common.auditor.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@SQLDelete(sql = "UPDATE p_vendor SET is_deleted = true WHERE vendor_id = ?")
-@Where(clause = "is_deleted = false")
+@SQLRestriction(value = "is_deleted = false")
 public class Vendor extends BaseEntity {
 
     @Id

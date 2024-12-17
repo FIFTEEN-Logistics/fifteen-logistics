@@ -3,8 +3,8 @@ package com.fifteen.eureka.vpo.domain.model;
 import com.fifteen.eureka.common.auditor.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "p_order_detail")
@@ -12,7 +12,7 @@ import org.hibernate.annotations.Where;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Where(clause = "is_deleted = false")
+@SQLRestriction(value = "is_deleted = false")
 public class OrderDetail extends BaseEntity {
 
     @UuidGenerator

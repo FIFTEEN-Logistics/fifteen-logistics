@@ -3,9 +3,8 @@ package com.fifteen.eureka.vpo.domain.model;
 import com.fifteen.eureka.common.auditor.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.annotations.Where;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,8 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@SQLDelete(sql = "UPDATE p_order SET is_deleted = true WHERE order_id = ?")
-@Where(clause = "is_deleted = false")
+@SQLRestriction(value = "is_deleted = false")
 public class Order extends BaseEntity {
 
     private static final int MAX_NUMBER = 999;
