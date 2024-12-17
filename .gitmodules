@@ -1,3 +1,5 @@
+[submodule "ai/src/main/java/com/fifteen/eureka/common"]
+	path = ai/src/main/java/com/fifteen/eureka/common
 [submodule "user/src/main/java/com/fifteen/eureka/common"]
 	path = user/src/main/java/com/fifteen/eureka/common
 	url = https://github.com/FIFTEEN-Logistics/common.git
