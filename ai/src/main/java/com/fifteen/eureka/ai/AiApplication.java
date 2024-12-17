@@ -5,8 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication(scanBasePackages = {
-		"com.fifteen.eureka.ai",
-		"com.fifteen.eureka.common"})
+		"com.fifteen.eureka.ai"})
 @EnableDiscoveryClient
 public class AiApplication {
 
