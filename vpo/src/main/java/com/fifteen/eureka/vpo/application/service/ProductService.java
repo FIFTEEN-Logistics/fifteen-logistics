@@ -1,9 +1,7 @@
 package com.fifteen.eureka.vpo.application.service;
 
 import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
-import com.fifteen.eureka.common.response.ApiResponse;
 import com.fifteen.eureka.common.response.ResErrorCode;
-import com.fifteen.eureka.common.role.Role;
 import com.fifteen.eureka.vpo.application.dto.product.CreateProductDto;
 import com.fifteen.eureka.vpo.application.dto.product.ProductResponse;
 import com.fifteen.eureka.vpo.application.dto.product.UpdateProductDto;
@@ -14,7 +12,6 @@ import com.fifteen.eureka.vpo.domain.repository.ProductRepository;
 import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
 import com.fifteen.eureka.vpo.infrastructure.client.hub.HubClient;
 import com.fifteen.eureka.vpo.infrastructure.client.hub.HubDetailsResponse;
-import com.fifteen.eureka.vpo.infrastructure.client.user.UserClient;
 import com.fifteen.eureka.vpo.infrastructure.repository.ProductQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -37,14 +34,20 @@ public class ProductService {
     private final VendorRepository vendorRepository;
     private final ProductQueryRepository productQueryRepository;
     private final HubClient hubClient;
-    private final UserClient userClient;
-
 
     @Transactional
     public ProductResponse createProduct(CreateProductDto request, Long currentUserId, String currentRole) {
 
         Vendor vendor = vendorRepository.findById(request.getVendorId())
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 업체를 찾을 수 없습니다."));
+
+        productRepository.findByProductName(request.getProductName())
+                .ifPresent(existingProduct -> {
+                    if (Objects.equals(existingProduct.getVendor().getVendorId(), vendor.getVendorId())) {
+                        throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 업체에 중복된 상품 이름이 존재합니다.");
+                    }
+                });
+
 
         if(!vendor.getVendorType().equals(VendorType.SUPPLIER)) {
             throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 업체는 공급업체가 아닙니다.");
@@ -123,6 +126,13 @@ public class ProductService {
             if(!Objects.equals(product.getVendor().getUserId(), currentUserId)) {
                 throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "담당 업체의 상품만 수정할 수 있습니다.");
             }
+        }
+
+        if (!product.getProductName().equals(request.getProductName())) {
+            productRepository.findByProductName(request.getProductName())
+                    .ifPresent(existingProduct -> {
+                        throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 업체에 중복된 상품 이름이 존재합니다.");
+                    });
         }
 
         product.update(

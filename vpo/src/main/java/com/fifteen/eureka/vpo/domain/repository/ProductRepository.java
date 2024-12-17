@@ -1,8 +1,6 @@
 package com.fifteen.eureka.vpo.domain.repository;
 
 import com.fifteen.eureka.vpo.domain.model.Product;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -19,4 +17,5 @@ public interface ProductRepository{
 
     Product save(Product product);
 
+    Optional<Product> findByProductName(String productName);
 }

@@ -96,9 +96,6 @@ public class Order extends BaseEntity {
         return currentDate + Suffix;
     }
 
-    public void updateReceiver(Vendor receiver) {
-        this.receiver = receiver;
-    }
 
     public void updateOrderRequest(String orderRequest) {
         this.orderRequest = orderRequest;

@@ -10,10 +10,10 @@ import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
 import com.fifteen.eureka.vpo.infrastructure.client.hub.HubClient;
 import com.fifteen.eureka.vpo.infrastructure.client.hub.HubDetailsResponse;
 import com.fifteen.eureka.vpo.infrastructure.client.user.UserClient;
+import com.fifteen.eureka.vpo.infrastructure.client.user.UserGetResponseDto;
 import com.fifteen.eureka.vpo.infrastructure.repository.VendorQueryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -35,11 +35,16 @@ public class VendorService {
     private final VendorQueryRepository vendorQueryRepository;
     private final HubClient hubClient;
     private final UserClient userClient;
-    @Value("${UserCheck.key}")
-    private String userCheckKey;
 
     @Transactional
     public VendorResponse createVendor(CreateVendorDto request, Long currentUserId, String currentRole) {
+
+        vendorRepository.findByVendorName(request.getVendorName())
+                .ifPresent(existingVendor -> {
+                    if (Objects.equals(existingVendor.getHubId(), request.getHubId())) {
+                        throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 허브에 중복된 업체 이름이 존재합니다.");
+                    }
+                });
 
         HubDetailsResponse hubDetailsResponse = Optional.ofNullable(hubClient.getHub(request.getHubId()).getData())
                 .orElseThrow(() -> new CustomApiException(ResErrorCode.BAD_REQUEST));
@@ -50,12 +55,12 @@ public class VendorService {
             }
         }
 
-//        UserGetResponseDto userGetResponseDto = Optional.ofNullable(userClient.findUserById(currentUserId,"userCheck",userCheckKey).getBody().getData())
-//                .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
-//
-//        if (!userGetResponseDto.getRole().equals(UserGetResponseDto.Role.ROLE_ADMIN_VENDOR)) {
-//            throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
-//        }
+        UserGetResponseDto userGetResponseDto = Optional.ofNullable(userClient.findUserByIdForService(request.getUserId()).getBody().getData())
+                .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
+
+        if (!userGetResponseDto.getRole().equals(UserGetResponseDto.Role.ROLE_ADMIN_VENDOR)) {
+            throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "업체 담당자 권한을 가진 사용자가 아닙니다.");
+        }
 
         Vendor vendor = Vendor.create(
                 request.getHubId(),
@@ -108,7 +113,7 @@ public class VendorService {
         }
 
         // hubId 변경 되었을 경우
-        if (!vendor.getHubId().equals(request.getHubId())) {
+        if (!Objects.equals(vendor.getHubId(), request.getHubId())) {
 
             HubDetailsResponse hubDetailsResponse = Optional.ofNullable(hubClient.getHub(request.getHubId()).getData())
                     .orElseThrow(() -> new CustomApiException(ResErrorCode.BAD_REQUEST));
@@ -116,15 +121,22 @@ public class VendorService {
             vendor.hunInfoUpdate(hubDetailsResponse.getId(), hubDetailsResponse.getHubManagerId());
         }
 
-//        // vendor manager 변경되었을 경우
-//        if (!vendor.getUserId().equals(request.getUserId())) {
-//            UserGetResponseDto userGetResponseDto = Optional.ofNullable(userClient.findUserById(currentUserId,"userCheck",userCheckKey).getBody().getData())
-//                .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
-//
-//            if (!userGetResponseDto.getRole().equals(UserGetResponseDto.Role.ROLE_ADMIN_VENDOR)) {
-//                throw new CustomApiException(ResErrorCode.UNAUTHORIZED);
-//            }
-//        }
+        // vendor manager 변경되었을 경우
+        if (!Objects.equals(vendor.getUserId(), request.getUserId())) {
+            UserGetResponseDto userGetResponseDto = Optional.ofNullable(userClient.findUserByIdForService(currentUserId).getBody().getData())
+                .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
+
+            if (!userGetResponseDto.getRole().equals(UserGetResponseDto.Role.ROLE_ADMIN_VENDOR)) {
+                throw new CustomApiException(ResErrorCode.UNAUTHORIZED, "업체 담당자 권한을 가진 사용자가 아닙니다.");
+            }
+        }
+
+        vendorRepository.findByVendorName(request.getVendorName())
+                .ifPresent(existingVendor -> {
+                    if (Objects.equals(existingVendor.getHubId(), request.getHubId())) {
+                        throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 허브에 중복된 업체 이름이 존재합니다.");
+                    }
+                });
 
         vendor.update(
                 request.getUserId(),

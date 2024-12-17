@@ -17,4 +17,6 @@ public interface VendorRepository{
     Vendor save(Vendor vendor);
 
     Page<Vendor> findAll(Pageable pageable);
+
+    Optional<Vendor> findByVendorName(String vendorName);
 }

@@ -2,15 +2,14 @@ package com.fifteen.eureka.vpo.application.service;
 
 import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.common.response.ResErrorCode;
-import com.fifteen.eureka.common.role.Role;
 import com.fifteen.eureka.vpo.application.dto.order.*;
 import com.fifteen.eureka.vpo.domain.model.*;
 import com.fifteen.eureka.vpo.domain.repository.OrderRepository;
 import com.fifteen.eureka.vpo.domain.repository.ProductRepository;
 import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
 import com.fifteen.eureka.vpo.domain.service.OrderProductService;
-import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryCreateRequest;
 import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryClient;
+import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryCreateRequest;
 import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryCreateResponse;
 import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryDetailsResponse;
 import com.fifteen.eureka.vpo.infrastructure.client.message.MessageClient;
@@ -20,7 +19,6 @@ import com.fifteen.eureka.vpo.infrastructure.client.user.UserGetResponseDto;
 import com.fifteen.eureka.vpo.infrastructure.repository.OrderQueryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -46,8 +44,7 @@ public class OrderService {
     private final MessageClient messageClient;
     private final OrderProductService orderProductService;
     private final UserClient userClient;
-    @Value("${UserCheck.key}")
-    private String userCheckKey;
+
 
     @Transactional
     public OrderResponse createOrder(CreateOrderDto orderRequest, List<CreateOrderDetailDto> orderDetailsRequest, CreateDeliveryInfoDto deliveryRequest, Long currentUserId) {
@@ -63,35 +60,6 @@ public class OrderService {
                 supplier
         );
 
-
-        // 배달 전달
-        DeliveryCreateRequest deliveryCreateRequest = DeliveryCreateRequest.builder()
-                .orderId(order.getOrderId())
-                .startHubId(order.getSupplier().getHubId())
-                .endHubId(order.getReceiver().getHubId())
-                .deliveryAddress(deliveryRequest.getDeliveryAddress())
-                .recipient(deliveryRequest.getRecipient())
-                .recipientSlackId(deliveryRequest.getRecipientSlackId())
-                .build();
-
-
-        DeliveryCreateResponse deliveryCreateResponse = Optional.ofNullable(
-                (DeliveryCreateResponse) deliveryClient.createDelivery(deliveryCreateRequest).getBody())
-                .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
-
-//        DeliveryCreateResponse deliveryCreateResponse = Optional.ofNullable(
-//                (DeliveryCreateResponse) deliveryClient.createDelivery(deliveryCreateRequest).getData()).orElseThrow(() -> {
-//                    String message = deliveryClient.createDelivery(deliveryCreateRequest).getMessage();
-//
-//                    if ("해당 시퀀스의 허브 배송 담당자가 없습니다.".equals(message)) {
-//                        cancelOrder(order.getOrderId(), currentUserId);
-//                    } else if ("해당 시퀀스의 업체 배송 담당자가 없습니다.".equals(message)) {
-//                        cancelOrder(order.getOrderId(), currentUserId);
-//                    }
-//                    return new CustomApiException(ResErrorCode.BAD_REQUEST);
-//                }
-//        );
-//
 
         // orderDetail 추가
         for (CreateOrderDetailDto OrderDetailDto : orderDetailsRequest) {
@@ -111,12 +79,30 @@ public class OrderService {
 
         }
 
+        // 배달 전달
+        DeliveryCreateRequest deliveryCreateRequest = DeliveryCreateRequest.builder()
+                .orderId(order.getOrderId())
+                .startHubId(order.getSupplier().getHubId())
+                .endHubId(order.getReceiver().getHubId())
+                .deliveryAddress(deliveryRequest.getDeliveryAddress())
+                .recipient(deliveryRequest.getRecipient())
+                .recipientSlackId(deliveryRequest.getRecipientSlackId())
+                .build();
+
+
+        DeliveryCreateResponse deliveryCreateResponse = Optional.ofNullable(
+                (DeliveryCreateResponse) deliveryClient.createDelivery(deliveryCreateRequest).getBody())
+                .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
+
+        order.addDelivery(deliveryCreateResponse.getDeliveryId());
+
         order.calculateTotalPrice();
 
         orderRepository.save(order);
 
+        // 주문자 email 가져오기
         UserGetResponseDto userGetResponseDto = Objects.requireNonNull(
-                userClient.findUserById(currentUserId, "username", userCheckKey).getBody()).getData();
+                userClient.findUserByIdForService(currentUserId).getBody()).getData();
 
         // 메시지 전송
         MessageCreateRequest request = MessageCreateRequest.builder()
@@ -139,7 +125,6 @@ public class OrderService {
                 .build();
 
         messageClient.createMessage(request);
-
 
         return OrderResponse.of(order);
     }
@@ -195,20 +180,10 @@ public class OrderService {
             throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 주문은 배송 시작상태로 수정이 불가합니다.");
         }
 
-//        // 수령업체 변경 처리 -> 배달, 슬랙메시지 전송
-//        if (!order.getReceiver().getVendorId().equals(orderRequest.getReceiverId())) {
-//
-//            Vendor receiver = checkVendorType(orderRequest.getReceiverId(), VendorType.RECEIVER);
-//
-//            order.updateReceiver(receiver);
-//        }
-//
-//        // 요청사항 변경 처리 -> 배달, 슬랙메시지 전송
-//        if (!order.getOrderRequest().equals(orderRequest.getOrderRequest())) {
-//            order.updateOrderRequest(orderRequest.getOrderRequest());
-//        }
-
-        order.calculateTotalPrice();
+        // 요청사항 변경
+        if (!order.getOrderRequest().equals(orderRequest.getOrderRequest())) {
+            order.updateOrderRequest(orderRequest.getOrderRequest());
+        }
 
         return OrderResponse.of(order);
 
@@ -226,17 +201,20 @@ public class OrderService {
             }
         }
 
-        //배송 상태 확인
-        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getBody())
-                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
-
-        if(!deliveryDetailsResponse.getDeliveryStatus().equals(DeliveryDetailsResponse.DeliveryStatus.HUB_WAITING)) {
-            throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 주문은 배송 시작상태로 취소가 불가합니다.");
-        }
-
-
         if(order.isCanceled()) {
             throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 주문은 이미 취소된 주문입니다.");
+        }
+
+        //배송 상태 확인
+//        DeliveryDetailsResponse deliveryDetailsResponse = (DeliveryDetailsResponse) Optional.ofNullable(deliveryClient.getDelivery(order.getDeliveryId()).getBody())
+//                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
+//
+//        if(!deliveryDetailsResponse.getDeliveryStatus().equals(DeliveryDetailsResponse.DeliveryStatus.HUB_WAITING)) {
+//            throw new CustomApiException(ResErrorCode.BAD_REQUEST, "해당 주문은 배송 시작상태로 취소가 불가합니다.");
+//        }
+
+        if (!deliveryClient.deleteDelivery(order.getDeliveryId()).getCode().equals(20003)) {
+            throw new CustomApiException(ResErrorCode.INTERNAL_SERVER_ERROR, "주문 취소에 실패하였습니다.");
         }
 
         order.cancel();
@@ -258,7 +236,7 @@ public class OrderService {
     public OrderResponse deleteOrder(UUID orderId, Long currentUserId, String currentRole) {
         //배송 상태 확인
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 주문을 찾을 수 없습니다."));
 
         if (currentRole.equals("ROLE_ADMIN_HUB")) {
             if (!order.getSupplier().getHubManagerId().equals(currentUserId) && !order.getReceiver().getHubManagerId().equals(currentUserId)) {
