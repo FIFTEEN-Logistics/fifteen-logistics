@@ -1,0 +1,209 @@
+services:
+  # Eureka Server
+  server:
+    build:
+      context: ./server
+    container_name: server
+    ports:
+      - "8761:8761"
+    networks:
+      - fifteen-network
+    environment:
+      - SPRING_ZIPKIN_BASE_URL=http://zipkin:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+
+  # API Gateway
+  gateway:
+    build:
+      context: ../fifteen-logistics2/gateway
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - server
+    networks:
+      - fifteen-network
+    environment:
+      - SPRING_ZIPKIN_BASE_URL=http://zipkin:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+
+  # User Service
+  user:
+    build:
+      context: ../fifteen-logistics2/user
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - server
+      - redis
+      - postgres_user
+    networks:
+      - fifteen-network
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_user:5432/fifteen
+      - SPRING_ZIPKIN_BASE_URL=http://zipkin:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+
+  # VPO Service
+  vpo:
+    build:
+      context: ../fifteen-logistics2/vpo
+    container_name: vpo-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - server
+      - postgres_vpo
+    networks:
+      - fifteen-network
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_vpo:5432/fifteen
+      - SPRING_ZIPKIN_BASE_URL=http://zipkin:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+
+
+  # Delivery Service
+  delivery:
+    build:
+      context: ../fifteen-logistics2/delivery
+    container_name: delivery-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - server
+      - redis
+      - postgres_delivery
+    networks:
+      - fifteen-network
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_delivery:5432/fifteen
+      - SPRING_ZIPKIN_BASE_URL=http://zipkin:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+
+  # Message Service
+  message:
+    build:
+      context: ../fifteen-logistics2/message
+    container_name: message-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      - server
+      - postgres_message
+    networks:
+      - fifteen-network
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_message:5432/fifteen
+      - SPRING_ZIPKIN_BASE_URL=http://zipkin:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+
+  # AI Service
+  ai:
+    build:
+      context: ../fifteen-logistics2/ai
+    container_name: ai-service
+    ports:
+      - "8085:8085"
+    depends_on:
+      - server
+    networks:
+      - fifteen-network
+    environment:
+      - SPRING_ZIPKIN_BASE_URL=http://zipkin:9411
+      - SPRING_SLEUTH_SAMPLER_PROBABILITY=1.0
+
+  # Redis (공유)
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - fifteen-network
+
+  # PostgreSQL(user)
+  postgres_user:
+    image: postgres:14-alpine
+    container_name: postgres_user
+    environment:
+      POSTGRES_USER: fifteen
+      POSTGRES_PASSWORD: fifteen
+      POSTGRES_DB: fifteen
+    ports:
+      - "5433:5432"
+    networks:
+      - fifteen-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U fifteen" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL(vpo)
+  postgres_vpo:
+    image: postgres:14-alpine
+    container_name: postgres_vpo
+    environment:
+      POSTGRES_USER: fifteen
+      POSTGRES_PASSWORD: fifteen
+      POSTGRES_DB: fifteen
+    ports:
+      - "5434:5432"
+    networks:
+      - fifteen-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U fifteen" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL(delivery)
+  postgres_delivery:
+    image: postgres:14-alpine
+    container_name: postgres_delivery
+    environment:
+      POSTGRES_USER: fifteen
+      POSTGRES_PASSWORD: fifteen
+      POSTGRES_DB: fifteen
+    ports:
+      - "5435:5432"
+    networks:
+      - fifteen-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U fifteen" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL(message)
+  postgres_message:
+    image: postgres:14-alpine
+    container_name: postgres_message
+    environment:
+      POSTGRES_USER: fifteen
+      POSTGRES_PASSWORD: fifteen
+      POSTGRES_DB: fifteen
+    ports:
+      - "5436:5432"
+    networks:
+      - fifteen-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U fifteen" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Zipkin
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - fifteen-network
+
+networks:
+  fifteen-network:
+    driver: bridge
