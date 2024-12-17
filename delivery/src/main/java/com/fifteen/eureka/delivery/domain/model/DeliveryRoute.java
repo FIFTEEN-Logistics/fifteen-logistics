@@ -43,7 +43,7 @@ public class DeliveryRoute extends BaseEntity {
 	@JoinColumn(nullable = false)
 	private Hub arrivalHub;
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(nullable = false)
 	private DeliveryManager deliveryManager;
 

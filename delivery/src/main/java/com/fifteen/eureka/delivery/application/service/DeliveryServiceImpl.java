@@ -129,7 +129,12 @@ public class DeliveryServiceImpl implements DeliveryService {
 	@Override
 	@Transactional
 	public void deleteDelivery(UUID deliveryId) {
-		deliveryRepository.deleteById(deliveryId);
+		Delivery delivery = deliveryRepository.findById(deliveryId)
+			.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "Delivery Not Found."));
+		if (delivery.getDeliveryStatus() != DeliveryStatus.HUB_WAITING) {
+			throw new CustomApiException(ResErrorCode.BAD_REQUEST, "Delivery is already depart");
+		}
+		deliveryRepository.delete(delivery);
 	}
 
 	private List<DeliveryRoute> getDeliveryRouteList(Hub startHub, Hub endHub) {

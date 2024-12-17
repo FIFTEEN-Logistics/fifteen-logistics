@@ -10,6 +10,6 @@ import com.fifteen.eureka.delivery.application.dto.user.UserResponse;
 @FeignClient(name = "user-service")
 public interface UserClient {
 
-	@GetMapping("/api/users/{userId}")
+	@GetMapping(value = "/api/users/{userId}", headers = {"X-Username=system", "X-Role=ROLE_ADMIN_MASTER"})
 	ApiResponse<UserResponse> getUser(@PathVariable Long userId);
 }
