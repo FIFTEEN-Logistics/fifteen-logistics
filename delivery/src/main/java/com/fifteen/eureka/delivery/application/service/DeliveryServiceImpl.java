@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fifteen.eureka.common.auditor.BaseEntity;
 import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
 import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.common.role.Role;
@@ -134,7 +135,8 @@ public class DeliveryServiceImpl implements DeliveryService {
 		if (delivery.getDeliveryStatus() != DeliveryStatus.HUB_WAITING) {
 			throw new CustomApiException(ResErrorCode.BAD_REQUEST, "Delivery is already depart");
 		}
-		deliveryRepository.delete(delivery);
+		delivery.getDeliveryRoutes().forEach(BaseEntity::markAsDeleted);
+		delivery.markAsDeleted();
 	}
 
 	private List<DeliveryRoute> getDeliveryRouteList(Hub startHub, Hub endHub) {

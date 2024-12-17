@@ -73,7 +73,9 @@ public class HubServiceImpl implements HubService {
 	@Override
 	@Transactional
 	public void deleteHub(UUID hubId) {
-		hubRepository.deleteById(hubId);
+		hubRepository.findById(hubId)
+			.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "Hub not found"))
+			.markAsDeleted();
 	}
 
 }
