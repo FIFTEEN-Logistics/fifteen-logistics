@@ -110,7 +110,6 @@ public class UserServiceImpl implements UserService {
     ApprovalStatus newStatus = requestDto.getApprovalStatus();
 
     user.updateApprovalStatus(newStatus);
-    userRepository.save(user);
   }
 
 
@@ -277,7 +276,16 @@ public class UserServiceImpl implements UserService {
   public void deleteUser(Long userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "User not found."));
-    userRepository.delete(user);
+
+    user.updateApprovalStatus(ApprovalStatus.REJECTED);
+    user.markAsDeleted();
+
+    try {
+      deliveryManagerClient.deleteDeliveryManager(user.getId());
+    } catch (FeignException e) {
+      throw new CustomApiException(ResErrorCode.API_CALL_FAILED,
+          "Failed to delete DeliveryManager: " + e.getMessage());
+    }
   }
 
   // email 중복 체크 메서드

@@ -1,6 +1,14 @@
 [submodule "delivery/src/main/java/com/fifteen/eureka/common"]
 	path = delivery/src/main/java/com/fifteen/eureka/common
-    url = https://github.com/FIFTEEN-Logistics/common.git
+  url = https://github.com/FIFTEEN-Logistics/common.git
+[submodule "ai/src/main/java/com/fifteen/eureka/common"]
+	path = ai/src/main/java/com/fifteen/eureka/common
 [submodule "user/src/main/java/com/fifteen/eureka/common"]
 	path = user/src/main/java/com/fifteen/eureka/common
+	url = https://github.com/FIFTEEN-Logistics/common.git
+[submodule "vpo/src/main/java/com/fifteen/eureka/common"]
+	path = vpo/src/main/java/com/fifteen/eureka/common
+	url = https://github.com/FIFTEEN-Logistics/common.git
+[submodule "message/src/main/java/com/fifteen/eureka/common"]
+	path = message/src/main/java/com/fifteen/eureka/common
 	url = https://github.com/FIFTEEN-Logistics/common.git
