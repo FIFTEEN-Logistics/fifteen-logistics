@@ -67,7 +67,9 @@ public class DeliveryManagerServiceImpl implements DeliveryManagerService {
 	@Override
 	@Transactional
 	public void deleteDeliveryManager(Long userId) {
-		deliveryManagerRepository.deleteById(userId);
+		deliveryManagerRepository.findById(userId)
+			.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "Delivery manager not found"))
+			.markAsDeleted();
 	}
 
 	// 배송 담당자 타입 별로 현재 최대 배송 순서 조회
