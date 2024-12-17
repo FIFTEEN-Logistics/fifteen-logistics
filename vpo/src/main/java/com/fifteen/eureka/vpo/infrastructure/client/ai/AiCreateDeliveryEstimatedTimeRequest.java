@@ -1,18 +1,20 @@
-package com.fifteen.eureka.vpo.infrastructure.client.message;
+package com.fifteen.eureka.vpo.infrastructure.client.ai;
 
 import com.fifteen.eureka.vpo.domain.model.OrderDetail;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.List;
 
 @Builder
 @Getter
-public class MessageCreateRequest {
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class AiCreateDeliveryEstimatedTimeRequest {
 
     private Long receiverId;
 
-    private String recipientSlackId;
+    private String messengerId;
     //=================ai 만들내용 ===================
     // 주문번호
     private String OrderNumber;

@@ -9,12 +9,14 @@ import com.fifteen.eureka.vpo.domain.repository.OrderRepository;
 import com.fifteen.eureka.vpo.domain.repository.ProductRepository;
 import com.fifteen.eureka.vpo.domain.repository.VendorRepository;
 import com.fifteen.eureka.vpo.domain.service.OrderProductService;
+import com.fifteen.eureka.vpo.infrastructure.client.ai.AiClient;
 import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryClient;
 import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryCreateRequest;
 import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryCreateResponse;
 import com.fifteen.eureka.vpo.infrastructure.client.delivery.DeliveryDetailsResponse;
 import com.fifteen.eureka.vpo.infrastructure.client.message.MessageClient;
-import com.fifteen.eureka.vpo.infrastructure.client.message.MessageCreateRequest;
+import com.fifteen.eureka.vpo.infrastructure.client.ai.AiCreateDeliveryEstimatedTimeRequest;
+import com.fifteen.eureka.vpo.infrastructure.client.message.MessageCreateRequestDto;
 import com.fifteen.eureka.vpo.infrastructure.client.user.UserClient;
 import com.fifteen.eureka.vpo.infrastructure.client.user.UserGetResponseDto;
 import com.fifteen.eureka.vpo.infrastructure.repository.OrderQueryRepository;
@@ -45,10 +47,13 @@ public class OrderService {
     private final MessageClient messageClient;
     private final OrderProductService orderProductService;
     private final UserClient userClient;
+    private final AiClient aiClient;
+
 
 
     @Transactional
     public OrderResponse createOrder(CreateOrderDto orderRequest, List<CreateOrderDetailDto> orderDetailsRequest, CreateDeliveryInfoDto deliveryRequest, Long currentUserId) {
+
 
         // 업체 타입 확인
         Vendor receiver = checkVendorType(orderRequest.getReceiverId(), VendorType.RECEIVER);
@@ -68,7 +73,7 @@ public class OrderService {
             Product product = productRepository.findByProductIdAndVendor_VendorId(OrderDetailDto.getProductId(), supplier.getVendorId())
                     .orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND, "해당 업체에 해당 상품이 존재하지 않습니다."));
 
-            if(product.getQuantity() - OrderDetailDto.getQuantity() < 0 ) {
+            if((product.getQuantity()-OrderDetailDto.getQuantity()) < 0 ) {
                 throw new CustomApiException(ResErrorCode.BAD_REQUEST, "주문 상품의 수는 상품의 재고를 넘을 수 없습니다.");
             }
 
@@ -76,7 +81,7 @@ public class OrderService {
                     OrderDetail.create(order, product, OrderDetailDto.getQuantity())
             );
 
-            orderProductService.updateProduct(product,OrderDetailDto.getQuantity(), order.isCanceled());
+            orderProductService.updateProduct(product, OrderDetailDto.getQuantity(), order.isCanceled());
 
         }
 
@@ -93,8 +98,7 @@ public class OrderService {
                 .build();
 
 
-        DeliveryCreateResponse deliveryCreateResponse = Optional.ofNullable(
-                (DeliveryCreateResponse) deliveryClient.createDelivery(deliveryCreateRequest).getData())
+        DeliveryCreateResponse deliveryCreateResponse = Optional.ofNullable(deliveryClient.createDelivery(deliveryCreateRequest).getData())
                 .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST));
 
         order.addDelivery(deliveryCreateResponse.getDeliveryId());
@@ -107,14 +111,14 @@ public class OrderService {
                 userClient.findUserByIdForService(currentUserId).getBody()).getData();
 
         // 메시지 전송
-        MessageCreateRequest request = MessageCreateRequest.builder()
+        AiCreateDeliveryEstimatedTimeRequest aiRequest = AiCreateDeliveryEstimatedTimeRequest.builder()
                 // 주문 정보
                 .receiverId(order.getSupplier().getHubManagerId())
                 .OrderNumber(order.getOrderNumber())
-                .productDetails(order.getOrderDetails().stream().map(MessageCreateRequest.ProductDetail::of).toList())
+                .productDetails(order.getOrderDetails().stream().map(AiCreateDeliveryEstimatedTimeRequest.ProductDetail::of).toList())
                 .orderRequest(order.getOrderRequest())
                 // 주문 생성 시 배달 요청 정보
-                .recipientSlackId(deliveryRequest.getRecipientSlackId())
+                .messengerId(deliveryRequest.getRecipientSlackId())
                 // 주문자 정보
                 .userName(userGetResponseDto.getUsername())
                 .userEmail(userGetResponseDto.getEmail())
@@ -126,7 +130,17 @@ public class OrderService {
                 .deliveryUserEmail(deliveryCreateResponse.getDeliveryUserEmail())
                 .build();
 
-        messageClient.createMessage(request);
+        String AiText = Optional.ofNullable(aiClient.createDeliveryEstimatedTime(aiRequest).getBody())
+                .orElseThrow(()-> new CustomApiException(ResErrorCode.BAD_REQUEST, "Ai 요청에 실패하였습니다."));
+
+
+        messageClient.createMessage(
+                MessageCreateRequestDto.builder()
+                        .messengerId(deliveryRequest.getRecipientSlackId())
+                        .receiverId(order.getSupplier().getHubManagerId())
+                        .message(AiText)
+                        .build()
+        );
 
         return OrderResponse.of(order);
     }
