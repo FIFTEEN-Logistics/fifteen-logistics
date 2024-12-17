@@ -3,7 +3,7 @@ package com.fifteen.eureka.delivery.infrastructure.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.fifteen.eureka.delivery.application.dto.HubSimpleResponse;
+import com.fifteen.eureka.delivery.application.dto.hub.HubSimpleResponse;
 
 public interface HubRepositoryCustom {
 

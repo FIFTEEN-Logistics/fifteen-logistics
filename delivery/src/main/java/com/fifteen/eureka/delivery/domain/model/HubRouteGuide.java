@@ -2,6 +2,11 @@ package com.fifteen.eureka.delivery.domain.model;
 
 import java.util.UUID;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
+import com.fifteen.eureka.common.auditor.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -19,7 +24,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "p_hub_route_guide")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class HubRouteGuide {
+@SQLDelete(sql = "UPDATE p_hub_route_guide SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
+public class HubRouteGuide extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -32,10 +39,6 @@ public class HubRouteGuide {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(nullable = false)
 	private Hub arrivalHub;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(nullable = false)
-	private DeliveryManger deliveryManger;
 
 	@Column(nullable = false)
 	private int duration;

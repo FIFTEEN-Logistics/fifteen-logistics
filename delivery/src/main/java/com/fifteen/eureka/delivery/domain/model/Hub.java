@@ -5,12 +5,10 @@ import java.util.UUID;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
-import com.fifteen.eureka.delivery.common.auditor.BaseEntity;
+import com.fifteen.eureka.common.auditor.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -36,7 +34,7 @@ public class Hub extends BaseEntity {
 	private UUID id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn
+	@JoinColumn(nullable = false)
 	private Hub centralHub;
 
 	@Column(nullable = false)
@@ -56,7 +54,7 @@ public class Hub extends BaseEntity {
 
 	@Builder
 	public Hub(Hub centralHub, Long hubManagerId, String hubName, String hubAddress, double latitude, double longitude) {
-		this.centralHub = centralHub;
+		this.centralHub = centralHub != null ? centralHub : this;
 		this.hubManagerId = hubManagerId;
 		this.hubName = hubName;
 		this.hubAddress = hubAddress;
@@ -65,15 +63,19 @@ public class Hub extends BaseEntity {
 	}
 
 	public boolean isCentralHub() {
-		return centralHub == null;
+		return centralHub.getId() == id;
 	}
 
 	public void update(Hub centralHub, Long hubManagerId, String hubName, String hubAddress, double latitude, double longitude) {
-		this.centralHub = centralHub;
+		this.centralHub = centralHub != null ? centralHub : this;
 		this.hubManagerId = hubManagerId;
 		this.hubName = hubName;
 		this.hubAddress = hubAddress;
 		this.latitude = latitude;
 		this.longitude = longitude;
+	}
+
+	public boolean isSameCentralHubWith(Hub hub) {
+		return this.centralHub.getId() == hub.getCentralHub().getId();
 	}
 }
