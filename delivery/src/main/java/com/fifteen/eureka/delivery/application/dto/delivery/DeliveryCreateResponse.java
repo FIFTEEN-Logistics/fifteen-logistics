@@ -35,7 +35,7 @@ public class DeliveryCreateResponse {
 			.deliveryId(delivery.getId())
 			.departureHubName(delivery.getStartHub().getHubName())
 			.routingHubNames(delivery.getDeliveryRoutes().stream()
-				.map(deliveryRoute -> deliveryRoute.getDepartureHub().getHubName())
+				.map(deliveryRoute -> deliveryRoute.getArrivalHub().getHubName())
 				.toList())
 			.deliveryAddress(delivery.getDeliveryAddress())
 			.build();
