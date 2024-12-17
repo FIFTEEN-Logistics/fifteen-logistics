@@ -54,7 +54,7 @@ public class Delivery extends BaseEntity {
 	@OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<DeliveryRoute> deliveryRoutes = new ArrayList<>();
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(nullable = false)
 	private DeliveryManager vendorDeliveryManager;
 
