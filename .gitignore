@@ -11,3 +11,10 @@
 .idea/
 *.iml
 *.xml
+user/
+server/
+message/
+gateway/
+delivery/
+!vpo/
+vpo/src/main/java/com/fifteen/eureka/common/
