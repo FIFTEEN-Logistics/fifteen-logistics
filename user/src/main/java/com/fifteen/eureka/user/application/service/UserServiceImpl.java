@@ -6,6 +6,8 @@ import com.fifteen.eureka.common.response.ResErrorCode;
 import com.fifteen.eureka.common.role.Role;
 import com.fifteen.eureka.user.application.dto.auth.ApprovalRequestDto;
 import com.fifteen.eureka.user.application.dto.deliveryManager.DeliveryManagerCreateRequest;
+import com.fifteen.eureka.user.application.dto.deliveryManager.DeliveryManagerCreateRequest.DeliveryManagerType;
+import com.fifteen.eureka.user.application.dto.deliveryManager.DeliveryManagerUpdateRequest;
 import com.fifteen.eureka.user.application.dto.user.SignupRequestDto;
 import com.fifteen.eureka.user.application.dto.user.UserGetListResponseDto;
 import com.fifteen.eureka.user.application.dto.user.UserGetResponseDto;
@@ -19,6 +21,7 @@ import com.fifteen.eureka.user.infrastructure.config.FeignHeaderConfig;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import feign.FeignException;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +29,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -49,8 +51,8 @@ public class UserServiceImpl implements UserService {
       throw new IllegalArgumentException("ROLE_ADMIN_MASTER cannot register via signup.");
     }
 
-    // ROLE_DELIVERY_HUB일 경우 허브 ID 검증
-    if (userRole == Role.ROLE_DELIVERY_HUB && requestDto.getHubId() == null) {
+    // ROLE_DELIVERY_VENDOR일 경우 허브 ID 검증
+    if (userRole == Role.ROLE_DELIVERY_VENDOR && requestDto.getHubId() == null) {
       throw new CustomApiException(ResErrorCode.BAD_REQUEST, "Hub ID is required");
     }
 
@@ -68,25 +70,27 @@ public class UserServiceImpl implements UserService {
 
       userRepository.save(user);
 
+      // 헤더에 Username 추가 (for Auditor)
       FeignHeaderConfig.setUsername(user.getUsername());
 
       // ROLE_DELIVERY_HUB 또는 ROLE_DELIVERY_VENDOR일 경우 DeliveryManager 생성
       if (userRole == Role.ROLE_DELIVERY_HUB || userRole == Role.ROLE_DELIVERY_VENDOR) {
-        DeliveryManagerCreateRequest.DeliveryManagerType deliveryManagerType =
+        DeliveryManagerType deliveryManagerType =
             userRole == Role.ROLE_DELIVERY_HUB
-                ? DeliveryManagerCreateRequest.DeliveryManagerType.HUB
-                : DeliveryManagerCreateRequest.DeliveryManagerType.VENDOR;
+                ? DeliveryManagerType.HUB
+                : DeliveryManagerType.VENDOR;
 
-        DeliveryManagerCreateRequest deliveryManagerRequestDto = DeliveryManagerCreateRequest.builder()
+        DeliveryManagerCreateRequest deliveryManagerCreateRequest = DeliveryManagerCreateRequest.builder()
             .userId(user.getId())
-            .hubId(userRole == Role.ROLE_DELIVERY_HUB ? requestDto.getHubId() : null)
+            .hubId(userRole == Role.ROLE_DELIVERY_VENDOR ? requestDto.getHubId() : null)
             .deliveryManagerType(deliveryManagerType)
             .build();
 
         try {
-          deliveryManagerClient.createDeliveryManager(deliveryManagerRequestDto);
+          deliveryManagerClient.createDeliveryManager(deliveryManagerCreateRequest);
         } catch (FeignException e) {
-          throw new CustomApiException(ResErrorCode.API_CALL_FAILED, "Failed to create DeliveryManager: "+ e.getMessage());
+          throw new CustomApiException(ResErrorCode.API_CALL_FAILED,
+              "Failed to create DeliveryManager: " + e.getMessage());
         }
       }
 
@@ -108,6 +112,7 @@ public class UserServiceImpl implements UserService {
     user.updateApprovalStatus(newStatus);
     userRepository.save(user);
   }
+
 
   @Override
   @Transactional
@@ -143,6 +148,9 @@ public class UserServiceImpl implements UserService {
           "same as before: " + String.join(", ", unchangedFields));
     }
 
+    Role previousRole = user.getRole(); // 기존 역할 저장
+
+    // 유저 정보 업데이트
     user.updateUserInfo(
         requestDto.getEmail(),
         requestDto.getSlackId(),
@@ -152,6 +160,66 @@ public class UserServiceImpl implements UserService {
     );
 
     userRepository.save(user);
+
+    // DeliveryManager 정보 업데이트
+    Role updatedRole = requestDto.getRole();
+    boolean wasDeliveryRole = isDeliveryRole(previousRole);
+    boolean isNowDeliveryRole = isDeliveryRole(updatedRole);
+
+    // ROLE_DELIVERY_HUB일 경우 허브 ID 검증
+    if (updatedRole == Role.ROLE_DELIVERY_VENDOR && requestDto.getHubId() == null) {
+      throw new CustomApiException(ResErrorCode.BAD_REQUEST, "Hub ID is required");
+    }
+
+    if (isNowDeliveryRole && !wasDeliveryRole) {
+      DeliveryManagerType deliveryManagerType =
+          updatedRole == Role.ROLE_DELIVERY_HUB
+              ? DeliveryManagerType.HUB
+              : DeliveryManagerType.VENDOR;
+
+      DeliveryManagerCreateRequest deliveryManagerCreateRequest = DeliveryManagerCreateRequest.builder()
+          .userId(user.getId())
+          .hubId(updatedRole == Role.ROLE_DELIVERY_VENDOR ? requestDto.getHubId() : null)
+          .deliveryManagerType(deliveryManagerType)
+          .build();
+
+      try {
+        deliveryManagerClient.createDeliveryManager(deliveryManagerCreateRequest);
+      } catch (FeignException e) {
+        throw new CustomApiException(ResErrorCode.API_CALL_FAILED,
+            "Failed to create DeliveryManager: " + e.getMessage());
+      }
+    }
+
+    if (!isNowDeliveryRole && wasDeliveryRole) {
+      // role : delivery -> other 이면, 삭제
+      try {
+        deliveryManagerClient.deleteDeliveryManager(user.getId());
+      } catch (FeignException e) {
+        throw new CustomApiException(ResErrorCode.API_CALL_FAILED,
+            "Failed to delete DeliveryManager: " + e.getMessage());
+      }
+    }
+
+    if (isNowDeliveryRole) {
+      // 기존 DeliveryManager 수정
+      DeliveryManagerType deliveryManagerType =
+          updatedRole == Role.ROLE_DELIVERY_HUB
+              ? DeliveryManagerType.HUB
+              : DeliveryManagerType.VENDOR;
+
+      DeliveryManagerUpdateRequest deliveryManagerUpdateRequest = DeliveryManagerUpdateRequest.builder()
+          .hubId(updatedRole == Role.ROLE_DELIVERY_VENDOR ? requestDto.getHubId() : null)
+          .deliveryManagerType(deliveryManagerType)
+          .build();
+
+      try {
+        deliveryManagerClient.updateDeliveryManager(user.getId(), deliveryManagerUpdateRequest);
+      } catch (FeignException e) {
+        throw new CustomApiException(ResErrorCode.API_CALL_FAILED,
+            "Failed to update DeliveryManager: " + e.getMessage());
+      }
+    }
   }
 
   @Override
@@ -224,5 +292,10 @@ public class UserServiceImpl implements UserService {
     if (userRepository.existsByUsername(username)) {
       throw new CustomApiException(ResErrorCode.BAD_REQUEST, "Username already in use.");
     }
+  }
+
+  // 딜리버리 롤인지 확인하는 메서드
+  private boolean isDeliveryRole(Role role) {
+    return role == Role.ROLE_DELIVERY_HUB || role == Role.ROLE_DELIVERY_VENDOR;
   }
 }
