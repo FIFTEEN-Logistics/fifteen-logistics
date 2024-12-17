@@ -7,12 +7,12 @@ import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fifteen.eureka.delivery.application.dto.HubCreateDto;
-import com.fifteen.eureka.delivery.application.dto.HubDetailsResponse;
-import com.fifteen.eureka.delivery.application.dto.HubSimpleResponse;
-import com.fifteen.eureka.delivery.application.dto.HubUpdateDto;
-import com.fifteen.eureka.delivery.common.exceptionhandler.CustomApiException;
-import com.fifteen.eureka.delivery.common.response.ResErrorCode;
+import com.fifteen.eureka.common.exceptionhandler.CustomApiException;
+import com.fifteen.eureka.common.response.ResErrorCode;
+import com.fifteen.eureka.delivery.application.dto.hub.HubCreateRequest;
+import com.fifteen.eureka.delivery.application.dto.hub.HubDetailsResponse;
+import com.fifteen.eureka.delivery.application.dto.hub.HubSimpleResponse;
+import com.fifteen.eureka.delivery.application.dto.hub.HubUpdateRequest;
 import com.fifteen.eureka.delivery.domain.model.Hub;
 import com.fifteen.eureka.delivery.domain.repository.HubRepository;
 
@@ -27,13 +27,13 @@ public class HubServiceImpl implements HubService {
 
 	@Override
 	@Transactional
-	public Hub createHub(HubCreateDto hubCreateDto) {
+	public Hub createHub(HubCreateRequest hubCreateRequest) {
 		Hub centralHub = null;
-		if (hubCreateDto.getCentralHubId() != null) {
-			centralHub = hubRepository.findById(hubCreateDto.getCentralHubId())
+		if (hubCreateRequest.getCentralHubId() != null) {
+			centralHub = hubRepository.findById(hubCreateRequest.getCentralHubId())
 				.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 		}
-		Hub hub = hubCreateDto.toEntity(centralHub);
+		Hub hub = hubCreateRequest.toEntity(centralHub);
 		return hubRepository.save(hub);
 	}
 
@@ -51,22 +51,22 @@ public class HubServiceImpl implements HubService {
 
 	@Override
 	@Transactional
-	public void updateHub(UUID hubId, HubUpdateDto hubUpdateDto) {
+	public void updateHub(UUID hubId, HubUpdateRequest hubUpdateRequest) {
 		Hub hub = hubRepository.findById(hubId)
 			.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND));
 
-		Hub centralHub = hubUpdateDto.getCentralHubId() != null
-			? hubRepository.findById(hubUpdateDto.getCentralHubId())
+		Hub centralHub = hubUpdateRequest.getCentralHubId() != null
+			? hubRepository.findById(hubUpdateRequest.getCentralHubId())
 			.orElseThrow(() -> new CustomApiException(ResErrorCode.NOT_FOUND))
 			: null;
 
 		hub.update(
 			centralHub,
-			hubUpdateDto.getHubManagerId(),
-			hubUpdateDto.getHubName(),
-			hubUpdateDto.getHubAddress(),
-			hubUpdateDto.getLatitude(),
-			hubUpdateDto.getLongitude()
+			hubUpdateRequest.getHubManagerId(),
+			hubUpdateRequest.getHubName(),
+			hubUpdateRequest.getHubAddress(),
+			hubUpdateRequest.getLatitude(),
+			hubUpdateRequest.getLongitude()
 		);
 	}
 

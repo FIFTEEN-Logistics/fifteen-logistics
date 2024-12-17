@@ -9,10 +9,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import com.fifteen.eureka.delivery.application.dto.HubSimpleResponse;
-import com.fifteen.eureka.delivery.application.dto.QHubSimpleResponse;
-import com.fifteen.eureka.delivery.domain.model.Hub;
-import com.fifteen.eureka.delivery.domain.model.QHub;
+import com.fifteen.eureka.delivery.application.dto.hub.HubSimpleResponse;
+import com.fifteen.eureka.delivery.application.dto.hub.QHubSimpleResponse;
 import com.fifteen.eureka.delivery.infrastructure.util.QuerydslUtils;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;

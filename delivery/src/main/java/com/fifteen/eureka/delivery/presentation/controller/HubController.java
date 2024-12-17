@@ -18,11 +18,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.fifteen.eureka.common.response.ApiResponse;
+import com.fifteen.eureka.common.response.ResSuccessCode;
+import com.fifteen.eureka.delivery.application.dto.hub.HubCreateRequest;
+import com.fifteen.eureka.delivery.application.dto.hub.HubUpdateRequest;
 import com.fifteen.eureka.delivery.application.service.HubService;
-import com.fifteen.eureka.delivery.common.response.ApiResponse;
-import com.fifteen.eureka.delivery.common.response.ResSuccessCode;
-import com.fifteen.eureka.delivery.presentation.request.HubCreateRequest;
-import com.fifteen.eureka.delivery.presentation.request.HubUpdateRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,7 +35,7 @@ public class HubController {
 
 	@PostMapping
 	public ResponseEntity<ApiResponse<?>> createHub(@RequestBody HubCreateRequest hubCreateRequest) {
-		UUID createdHubId = hubService.createHub(hubCreateRequest.toDto()).getId();
+		UUID createdHubId = hubService.createHub(hubCreateRequest).getId();
 		URI location = ServletUriComponentsBuilder
 			.fromCurrentRequest()
 			.path("/{id}")
@@ -62,7 +62,7 @@ public class HubController {
 		@PathVariable UUID hubId,
 		@RequestBody HubUpdateRequest hubUpdateRequest
 	) {
-		hubService.updateHub(hubId, hubUpdateRequest.toDto());
+		hubService.updateHub(hubId, hubUpdateRequest);
 		return ApiResponse.OK(ResSuccessCode.UPDATED);
 	}
 
